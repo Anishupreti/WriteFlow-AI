@@ -1,6 +1,6 @@
 {
   "name": "writeflow-ai",
-  "version": "0.18.0",
+  "version": "0.18.1",
   "private": true,
   "scripts": {
     "test": "node tests/run.cjs",
@@ -10,12 +10,12 @@
     "jsdom": "^30.1.1",
     "playwright": "^1.58.2"
   },
-  "description": "An incremental upgrade of the supplied **0.15.5** archive. Milestone 2 has not been implemented. Existing tailored reply analysis was already present and is retained.",
+  "description": "Browser writing assistant with user-selected AI provider and contextual replies.",
   "main": "index.js",
   "directories": {
     "test": "tests"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "Anish Upreti",
+  "license": "SEE LICENSE IN LICENSE"
 }

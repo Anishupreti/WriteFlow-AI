@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.18.1 — GitHub release correction
+
+- Included `services/style-learning.js` in the dynamically registered content-script list, matching the manifest and restoring the build check.
+- Corrected the manifest and settings privacy wording to disclose Gumroad licence verification separately from AI requests.
+- Linked settings to the public repository privacy policy instead of a temporary artifact; verify the repository's default branch is `main` before release.
+- Matched the package metadata to the source-available `LICENSE` and updated the release version.
+- Clarified that the adapters listed in the README have synthetic fixture coverage, not full live-site verification.
+- No new Chrome permissions or host access.
+
 ## 0.16.0 — Milestone 1 evaluation build
 
 - Added platform registry, composed-DOM helpers and a normalized bounded context model.

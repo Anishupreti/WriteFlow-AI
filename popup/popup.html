@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>WriteFlow AI</title>
+<style>
+  :root {
+    --ink: #16181A; --bg: #FAFAF8; --surface: #FFFFFF; --muted: #5B6169;
+    --accent: #B5622C; --accent-2: #D97F45; --accent-ink: #FFFFFF;
+    --border: rgba(0,0,0,0.08); --hover: rgba(0,0,0,0.045);
+    --pro-bg: #FBF0E6; --pro-ink: #8A4A1E; --pro-border: #EAD2B8;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.07); --shadow: 0 8px 20px rgba(0,0,0,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #F2F1ED; --bg: #17181A; --surface: #212224; --muted: #9AA0A6;
+      --accent: #E0925C; --accent-2: #EDAB7C; --accent-ink: #201200;
+      --border: rgba(255,255,255,0.09); --hover: rgba(255,255,255,0.055);
+      --pro-bg: #2E2419; --pro-ink: #E5B27E; --pro-border: #4A3823;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3); --shadow: 0 8px 22px rgba(0,0,0,.45);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { width: 288px; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  .header { display: flex; align-items: center; gap: 9px; padding: 18px 16px 4px; }
+  .mark { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(150deg, var(--accent), var(--accent-2)); display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .mark svg { color: #fff; }
+  h1 { font-size: 14.5px; margin: 0; font-weight: 650; letter-spacing: -0.01em; flex: 1; }
+  .tier-pill { font-size: 9.5px; font-weight: 700; letter-spacing: .04em; padding: 4px 9px; border-radius: 999px; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+  .tier-pill.free { background: var(--bg); color: var(--muted); }
+  .tier-pill.pro { background: var(--pro-bg); color: var(--pro-ink); border: 1px solid var(--pro-border); }
+  .tag { font-size: 11.5px; color: var(--muted); padding: 2px 16px 14px; }
+  .card { background: var(--surface); margin: 0 16px 12px; border-radius: 12px; padding: 13px 15px; border: 1px solid var(--border); }
+  .row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+  .status { color: var(--accent); font-weight: 600; }
+  .switch { position: relative; width: 32px; height: 18px; }
+  .switch input { display: none; }
+  .slider { position: absolute; inset: 0; background: var(--border); border-radius: 999px; cursor: pointer; transition: .15s; }
+  .slider:before { content: ""; position: absolute; width: 14px; height: 14px; left: 2px; top: 2px; background: var(--surface); border-radius: 50%; transition: .15s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+  input:checked + .slider { background: var(--accent); }
+  input:checked + .slider:before { transform: translateX(14px); }
+
+  .usage-label { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+  .usage-track { height: 5px; border-radius: 999px; background: var(--hover); overflow: hidden; }
+  .usage-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 999px; transition: width .2s ease; }
+
+  .links { display: flex; gap: 10px; padding: 2px 16px 16px; }
+  a.btn { flex: 1; text-align: center; font-size: 12.5px; font-weight: 600; padding: 9px 0; border-radius: 999px; text-decoration: none; transition: transform .14s ease, box-shadow .14s ease; position:relative; overflow:hidden; isolation:isolate; box-shadow:var(--shadow-sm); }
+  a.btn:hover { transform:translateY(-1px); box-shadow:var(--shadow); }
+  a.btn::after, .upgrade-banner a::after { content:""; position:absolute; top:50%; left:50%; width:0; height:0; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.42) 0 38%, transparent 70%); transform:translate(-50%,-50%); opacity:0; pointer-events:none; }
+  a.btn:active::after, .upgrade-banner a:active::after { animation:ripple .3s ease-out; }
+  @keyframes ripple { from { width:0; height:0; opacity:.7; } to { width:240%; height:240%; opacity:0; } }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-ghost { background: var(--hover); color: var(--ink); }
+  .warn { font-size: 11.5px; color: #C4432A; padding: 0 16px 10px; }
+  a.btn:focus-visible, input:focus-visible + .slider { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .upgrade-banner { margin: 0 16px 12px; border-radius: 12px; padding: 12px 14px; background: linear-gradient(180deg, var(--pro-bg), var(--surface)); border: 1px solid var(--pro-border); }
+  .upgrade-banner .title { font-size: 12.5px; font-weight: 700; color: var(--pro-ink); margin-bottom: 3px; }
+  .upgrade-banner .desc { font-size: 11.5px; color: var(--muted); margin-bottom: 9px; line-height: 1.4; }
+  .upgrade-banner a { display: inline-block; font-size: 12px; font-weight: 700; color: var(--accent-ink); background: var(--accent); padding: 7px 13px; border-radius: 999px; text-decoration: none; position:relative; overflow:hidden; isolation:isolate; box-shadow:var(--shadow-sm); transition:transform .14s ease, box-shadow .14s ease; }
+  .upgrade-banner a:hover { transform:translateY(-1px); box-shadow:var(--shadow); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+    a.btn:hover, .upgrade-banner a:hover { transform:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="mark">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    </div>
+    <h1>WriteFlow AI</h1>
+    <span class="tier-pill free" id="tier-badge">FREE</span>
+  </div>
+  <div class="tag">AI writing wherever you type.</div>
+
+  <div class="card">
+    <div class="row"><span>Status</span><span class="status" id="status-text">Active</span></div>
+    <div class="row"><span>Enabled</span>
+      <label class="switch"><input type="checkbox" id="enabled-toggle" /><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="usage-label"><span>This session</span><span id="usage-count">0 generations</span></div>
+    <div class="usage-track"><div class="usage-fill" id="usage-fill" style="width: 0%;"></div></div>
+  </div>
+
+  <div class="upgrade-banner" id="upgrade-banner">
+    <div class="title">Unlock every writing style</div>
+    <div class="desc">Professional, Friendly, Improve, Expand, Simplify &amp; custom instructions — one-time payment, yours forever.</div>
+    <a href="#" id="upgrade-link">Upgrade to Pro</a>
+  </div>
+
+  <div class="card" id="no-key-warning" style="display:none;">
+    <div class="warn" style="padding:0;">No API key set yet — add one in Settings to start generating.</div>
+  </div>
+
+  <div class="card" id="site-permission-card" style="display:none;">
+    <div class="warn" style="padding:0 0 8px; color: var(--muted);">WriteFlow hasn't been turned on for this site yet.</div>
+    <a href="#" class="btn btn-primary" id="enable-site" style="display:block;">Enable WriteFlow here</a>
+  </div>
+
+  <div class="links">
+    <a href="#" class="btn btn-ghost" id="disable-site">Disable on this site</a>
+  </div>
+  <div class="links">
+    <a href="#" class="btn btn-primary" id="open-options">Settings</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

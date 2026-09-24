@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "WriteFlow AI",
-  "version": "0.18.0",
-  "description": "AI writing wherever you type. Bring your own API key \u2014 nothing is sent to any server but your chosen AI provider.",
+  "version": "0.18.1",
+  "description": "AI writing in browser text fields using your own AI provider key. Optional Pro licence validation uses Gumroad.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

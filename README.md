@@ -1,6 +1,6 @@
-# WriteFlow AI 0.16.0 — Milestone 1
+# WriteFlow AI
 
-An incremental upgrade of the supplied **0.15.5** archive. Milestone 2 has not been implemented. Existing tailored reply analysis was already present and is retained.
+Current source version: **0.18.1**. This repository includes the extension source and developer tests. The sections below document its architecture and verification history; live-site coverage remains under evaluation.
 
 ## Install for evaluation
 

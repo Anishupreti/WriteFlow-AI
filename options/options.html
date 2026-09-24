@@ -1,0 +1,452 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>WriteFlow AI — Settings</title>
+<style>
+  :root {
+    --ink: #16181A; --bg: #FAFAF8; --surface: #FFFFFF; --muted: #5B6169;
+    --accent: #B5622C; --accent-2: #D97F45; --accent-ink: #FFFFFF;
+    --border: rgba(0,0,0,0.08); --hover: rgba(0,0,0,0.045);
+    --pro-bg: #FBF0E6; --pro-ink: #8A4A1E; --pro-border: #EAD2B8;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.07); --shadow: 0 8px 20px rgba(0,0,0,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #F2F1ED; --bg: #17181A; --surface: #212224; --muted: #9AA0A6;
+      --accent: #E0925C; --accent-2: #EDAB7C; --accent-ink: #201200;
+      --border: rgba(255,255,255,0.09); --hover: rgba(255,255,255,0.055);
+      --pro-bg: #2E2419; --pro-ink: #E5B27E; --pro-border: #4A3823;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3); --shadow: 0 8px 22px rgba(0,0,0,.45);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { max-width: 580px; margin: 40px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  h1 { font-size: 19px; font-weight: 650; display: flex; align-items: center; gap: 10px; letter-spacing: -0.01em; }
+  h1 .mark { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(150deg, var(--accent), var(--accent-2)); display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  h1 .mark svg { color: #fff; }
+  p.sub { color: var(--muted); font-size: 13px; margin-top: -6px; margin-bottom: 28px; }
+  .card { background: var(--surface); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .card-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
+  select, input[type=text], input[type=password], textarea {
+    width: 100%; padding: 10px 11px; border-radius: 8px; border: 1px solid var(--border); font-size: 13.5px;
+    background: var(--bg); color: var(--ink); transition: border-color .1s ease;
+  }
+  textarea { min-height: 82px; resize: vertical; line-height: 1.45; font-family: inherit; }
+  select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { margin-bottom: 16px; }
+  .row:last-child { margin-bottom: 0; }
+  .help { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .wf-dna-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .wf-dna-row label { flex: 0 0 108px; font-size: 12px; font-weight: 500; margin-bottom: 0; color: var(--ink); }
+  .wf-dna-row input[type=range] { flex: 1; accent-color: var(--accent); }
+  .wf-dna-row .wf-dna-value { flex: 0 0 34px; text-align: right; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .wf-dna-select-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .wf-dna-select-row > div { flex: 1; }
+  .wf-dna-select-row label { display: block; font-size: 11.5px; font-weight: 600; margin-bottom: 4px; }
+  button { background: var(--accent); color: var(--accent-ink); border: none; padding: 10px 18px; border-radius: 999px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform .14s ease, box-shadow .14s ease, opacity .14s ease; position:relative; overflow:hidden; isolation:isolate; box-shadow:var(--shadow-sm); }
+  button:hover { transform:translateY(-1px); box-shadow:var(--shadow); }
+  button::after { content:""; position:absolute; top:50%; left:50%; width:0; height:0; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.42) 0 38%, transparent 70%); transform:translate(-50%,-50%); opacity:0; pointer-events:none; }
+  button:active::after { animation:ripple .3s ease-out; }
+  @keyframes ripple { from { width:0; height:0; opacity:.7; } to { width:240%; height:240%; opacity:0; } }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.ghost { background: var(--hover); color: var(--ink); }
+  .status { font-size: 12px; color: var(--accent); margin-left: 10px; }
+  .status.err { color: #C4432A; }
+  .help.ok { color: #267A46; }
+  .help.warn { color: #A75B18; }
+  .key-help-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .key-link { flex-shrink: 0; color: var(--accent); font-size: 11.5px; font-weight: 650; text-decoration: none; margin-top: 6px; border-radius:999px; padding:3px 6px; transition:transform .14s ease, box-shadow .14s ease; }
+  .key-link:hover { transform:translateY(-1px); box-shadow:var(--shadow-sm); }
+
+  .tier-pill { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; padding: 4px 10px; border-radius: 999px; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+  .tier-pill.free { background: var(--bg); color: var(--muted); }
+  .tier-pill.pro { background: var(--pro-bg); color: var(--pro-ink); border: 1px solid var(--pro-border); }
+
+  .pro-card { border: 1px solid var(--pro-border); background: linear-gradient(180deg, var(--pro-bg) 0%, var(--surface) 60%); }
+  .pro-features { list-style: none; padding: 0; margin: 12px 0 16px; display:flex; flex-wrap:wrap; gap:7px; }
+  .pro-features li { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 6px 10px; color: var(--ink); background:var(--bg); border:1px solid var(--border); border-radius:999px; box-shadow:var(--shadow-sm); }
+  .pro-features svg { color: var(--accent); flex-shrink: 0; }
+  .license-row { display: flex; gap: 8px; }
+  .license-row input { flex: 1; }
+  .buy-link { display: inline-block; font-size: 12.5px; color: var(--accent); font-weight: 600; margin-top: 10px; text-decoration: none; border-radius:999px; padding:4px 7px; transition:transform .14s ease, box-shadow .14s ease; }
+  .buy-link:hover { transform:translateY(-1px); box-shadow:var(--shadow-sm); }
+
+  ul#blocklist { list-style: none; padding: 0; margin: 0; }
+  ul#blocklist li { display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--ink); }
+  ul#blocklist li:last-child { border-bottom: none; }
+  ul#blocklist button { background: var(--hover); color: var(--ink); padding: 4px 10px; font-size: 11.5px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+    button:hover, .key-link:hover, .buy-link:hover { transform:none; }
+  }
+
+  /* Onboarding wizard */
+  .ob-overlay {
+    position: fixed; inset: 0; z-index: 1000; background: rgba(20,18,15,0.42);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .ob-card {
+    background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25); width: 100%; max-width: 440px;
+    max-height: calc(100vh - 48px); overflow-y: auto; padding: 26px 26px 22px;
+  }
+  .ob-progress { display: flex; gap: 6px; margin-bottom: 18px; }
+  .ob-progress span { flex: 1; height: 4px; border-radius: 999px; background: var(--hover); }
+  .ob-progress span.ob-done { background: var(--accent); }
+  .ob-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  .ob-title { font-size: 18px; font-weight: 650; margin: 0 0 10px; letter-spacing: -0.01em; }
+  .ob-body { font-size: 13.5px; line-height: 1.6; color: var(--ink); margin: 0 0 18px; }
+  .ob-body strong { font-weight: 650; }
+  .ob-provider-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .ob-provider {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg);
+    cursor: pointer; text-align: left; font-family: inherit; color: var(--ink);
+    transition: border-color .12s ease, background .12s ease, transform .12s ease;
+  }
+  .ob-provider:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .ob-provider-name { font-size: 13.5px; font-weight: 600; }
+  .ob-provider-note { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .ob-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: .03em; padding: 3px 8px; border-radius: 999px;
+    background: var(--pro-bg); color: var(--pro-ink); border: 1px solid var(--pro-border); white-space: nowrap;
+  }
+  .ob-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; }
+  .ob-actions-right { display: flex; gap: 8px; align-items: center; }
+  .ob-skip { background: none; border: none; color: var(--muted); font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 8px 4px; }
+  .ob-skip:hover { color: var(--ink); }
+  .ob-back { background: var(--hover); color: var(--ink); }
+  .ob-key-status { font-size: 12.5px; margin-top: 10px; padding: 9px 11px; border-radius: 8px; display: none; align-items: center; gap: 7px; }
+  .ob-key-status.ob-show { display: flex; }
+  .ob-key-status.ob-ok { background: rgba(38,122,70,0.1); color: #267A46; }
+  .ob-key-status.ob-warn { background: rgba(167,91,24,0.1); color: #A75B18; }
+  .ob-key-status.ob-checking { background: var(--hover); color: var(--muted); }
+  .ob-spinner {
+    width: 13px; height: 13px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent;
+    animation: ob-spin .7s linear infinite; flex-shrink: 0;
+  }
+  @keyframes ob-spin { to { transform: rotate(360deg); } }
+  .ob-done-check { width: 46px; height: 46px; border-radius: 50%; background: var(--pro-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  @media (prefers-reduced-motion: reduce) {
+    .ob-spinner { animation: none; border-right-color: currentColor; }
+  }
+</style>
+</head>
+<body>
+  <div class="ob-overlay" id="ob-overlay" role="dialog" aria-modal="true" aria-labelledby="ob-title" style="display:none;">
+    <div class="ob-card">
+      <div class="ob-progress" id="ob-progress" aria-hidden="true">
+        <span data-step="1"></span><span data-step="2"></span><span data-step="3"></span><span data-step="4"></span><span data-step="5"></span>
+      </div>
+      <div id="ob-live" class="wf-sr-only" role="status" aria-live="polite"></div>
+
+      <!-- Step 1: intro -->
+      <section class="ob-step" id="ob-step-1">
+        <p class="ob-eyebrow">Welcome</p>
+        <h2 class="ob-title" id="ob-title">Let's connect your AI</h2>
+        <p class="ob-body">WriteFlow doesn't have a server of its own — you connect your <strong>own</strong> API key, and your writing goes straight from your browser to the AI provider you pick. Nothing passes through us.</p>
+        <p class="ob-body">Getting a key takes about a minute, and a couple of options are completely free with no credit card. We'll walk you through it.</p>
+        <div class="ob-actions">
+          <button class="ob-skip" id="ob-skip-1" type="button">Skip for now</button>
+          <button id="ob-start" type="button">Let's go →</button>
+        </div>
+      </section>
+
+      <!-- Step 2: choose provider -->
+      <section class="ob-step" id="ob-step-2" style="display:none;">
+        <p class="ob-eyebrow">Step 1 of 3</p>
+        <h2 class="ob-title">Pick an AI provider</h2>
+        <p class="ob-body">Any of these will work. Gemini and Groq are free with no credit card, so they're the easiest place to start.</p>
+        <div class="ob-provider-list" id="ob-provider-list"></div>
+        <div class="ob-actions">
+          <button class="ob-skip" id="ob-skip-2" type="button">Skip for now</button>
+          <span></span>
+        </div>
+      </section>
+
+      <!-- Step 3: get + paste key -->
+      <section class="ob-step" id="ob-step-3" style="display:none;">
+        <p class="ob-eyebrow">Step 2 of 3</p>
+        <h2 class="ob-title" id="ob-step3-title">Get your key</h2>
+        <p class="ob-body" id="ob-step3-instructions"></p>
+        <div class="row">
+          <button id="ob-open-provider" type="button">Open <span id="ob-provider-name-btn"></span> in a new tab →</button>
+        </div>
+        <div class="row" style="margin-top:16px;">
+          <label for="ob-key-input">Paste your key here</label>
+          <input type="password" id="ob-key-input" autocomplete="off" placeholder="Paste the key you just copied…" />
+          <div class="help">This is saved only on this device, never sent anywhere except directly to the provider you picked.</div>
+        </div>
+        <div class="ob-actions">
+          <button class="ob-back" id="ob-back-3" type="button">← Back</button>
+          <div class="ob-actions-right">
+            <button class="ob-skip" id="ob-skip-3" type="button">Skip for now</button>
+            <button id="ob-continue-3" type="button" disabled>Test this key →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: validate -->
+      <section class="ob-step" id="ob-step-4" style="display:none;">
+        <p class="ob-eyebrow">Step 3 of 3</p>
+        <h2 class="ob-title">Checking your key…</h2>
+        <p class="ob-body">We're just confirming the provider recognizes it. This doesn't cost anything or use up your free quota.</p>
+        <div class="ob-key-status" id="ob-key-status"></div>
+        <div class="ob-actions">
+          <button class="ob-back" id="ob-back-4" type="button">← Try a different key</button>
+          <div class="ob-actions-right">
+            <button class="ob-skip" id="ob-use-anyway" type="button" style="display:none;">Use it anyway</button>
+            <button id="ob-continue-4" type="button" style="display:none;">Continue →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 5: done -->
+      <section class="ob-step" id="ob-step-5" style="display:none;">
+        <div class="ob-done-check">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h2 class="ob-title">You're all set</h2>
+        <p class="ob-body">Click into any text box on the web — an email, a comment, a message — and a small icon will appear. Click it (or press <strong>Ctrl+Shift+Space</strong>, <strong>⌘+Shift+Space</strong> on Mac) to write, rewrite, or reply with AI.</p>
+        <div class="ob-actions">
+          <span></span>
+          <button id="ob-finish" type="button">Start writing</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="settings-content">
+  <h1>
+    <span class="mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+    WriteFlow AI
+    <span class="tier-pill free" id="tier-badge">FREE</span>
+  </h1>
+  <p class="sub">Bring your own API key. WriteFlow has no server of its own — but when you generate a suggestion, the relevant text is sent directly from your browser to whichever AI provider you've selected below, using your key. See "Privacy &amp; Data" for the full picture.</p>
+
+  <div class="card pro-card" id="pro-card">
+    <div class="card-title">
+      <span id="pro-card-title">Upgrade to Pro</span>
+      <span class="tier-pill pro" id="pro-card-badge" style="display:none;">PRO ACTIVE</span>
+    </div>
+    <ul class="pro-features">
+      <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg> Every writing style — Professional, Friendly, Improve, Expand, Simplify</li>
+      <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg> Custom instructions ("make this sound more confident")</li>
+      <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg> One-time payment — no subscription, yours forever</li>
+    </ul>
+    <div class="license-row" id="license-input-row">
+      <input type="text" id="licenseKey" placeholder="Paste your license key…" autocomplete="off" />
+      <button id="verify-license">Verify</button>
+    </div>
+    <div class="help" id="license-status"></div>
+    <a href="#" class="buy-link" id="buy-link" target="_blank" rel="noopener">Don't have a license yet? Get WriteFlow Pro &rarr;</a>
+  </div>
+
+  <div class="card">
+    <div class="card-title">AI Provider</div>
+    <div class="row">
+      <label for="provider">Provider</label>
+      <select id="provider">
+        <option value="openai">OpenAI (gpt-4o-mini)</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="gemini">Gemini — free, no card required</option>
+        <option value="groq">Groq — free, no card required, very fast</option>
+        <option value="openrouter">OpenRouter — free tier across open models</option>
+        <option value="mock">Mock (no key needed — for testing)</option>
+      </select>
+    </div>
+    <div class="row" id="key-row">
+      <label for="apiKey">API key</label>
+      <input type="password" id="apiKey" placeholder="Paste your provider API key…" autocomplete="off" />
+      <div class="key-help-row">
+        <div class="help">Stored locally on this device only (chrome.storage.local). Never synced, never sent anywhere except directly to your chosen provider's API.</div>
+        <a class="key-link" id="get-api-key" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get a free API key →</a>
+      </div>
+      <div class="help" id="apikey-status" role="status" aria-live="polite"></div>
+    </div>
+    <button id="save">Save</button><span class="status" id="save-status"></span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Backup Provider <span class="tier-pill pro" id="backup-provider-lock-badge" style="display:none;">PRO</span></div>
+    <p style="font-size: 12.5px; line-height: 1.6; margin: 0 0 14px; color: var(--ink);">
+      If your primary provider is down or rate-limited, WriteFlow will automatically retry once with this backup instead of showing an error. Needs its own API key.
+    </p>
+    <!-- Milestone 16, Batch 1: shown only for free-tier accounts. If you
+         already configured a backup before upgrading was required, it
+         keeps working as-is -- this only blocks setting up a NEW one. -->
+    <p class="help" id="backup-provider-upsell" style="display:none; margin: -6px 0 14px;">Backup provider is a Pro feature. <a href="#" id="backup-provider-upgrade-link" style="color: var(--accent); font-weight: 600;">Upgrade to Pro</a> to set one up.</p>
+    <div class="row">
+      <label for="fallbackProvider">Backup provider</label>
+      <select id="fallbackProvider">
+        <option value="">None — show the error instead</option>
+        <option value="openai">OpenAI (gpt-4o-mini)</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="gemini">Gemini — free, no card required</option>
+        <option value="groq">Groq — free, no card required, very fast</option>
+        <option value="openrouter">OpenRouter — free tier across open models</option>
+      </select>
+    </div>
+    <div class="row" id="fallback-key-row">
+      <label for="fallbackApiKey">Backup provider API key</label>
+      <input type="password" id="fallbackApiKey" placeholder="Paste the backup provider's API key…" autocomplete="off" />
+      <div class="key-help-row">
+        <div class="help">Stored locally, same as your primary key. Only used if the primary provider's call fails.</div>
+        <a class="key-link" id="get-fallback-api-key" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get a free API key →</a>
+      </div>
+      <div class="help" id="fallback-apikey-status" role="status" aria-live="polite"></div>
+    </div>
+    <button id="save-fallback">Save backup provider</button><span class="status" id="save-fallback-status"></span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Behaviour</div>
+    <div class="row">
+      <label for="defaultTone">Default tone</label>
+      <select id="defaultTone">
+        <option value="professional">Professional</option>
+        <option value="friendly">Friendly</option>
+        <option value="improve">Improve (neutral)</option>
+      </select>
+    </div>
+    <div class="row">
+      <label style="display:flex; align-items:center; gap:8px; font-weight:500;"><input type="checkbox" id="showFloatingButton" style="width:auto;" /> Show floating button on text fields</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sounds Like Me</div>
+    <div class="row">
+      <label for="styleNotes">How do you usually write?</label>
+      <textarea id="styleNotes" maxlength="1200" placeholder="For example: Casual and direct. Short sentences. No corporate jargon."></textarea>
+      <div class="help">Optional. Style changes how suggestions sound, never their facts or meaning.</div>
+    </div>
+    <div class="row">
+      <label for="writingSamples">Writing samples</label>
+      <textarea id="writingSamples" maxlength="6000" placeholder="Paste 2–3 examples of your writing, separated by a blank line."></textarea>
+      <div class="help">Stored locally. Samples are sent only to your chosen AI provider when generating a suggestion.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Your Writing Style</div>
+    <p class="help" style="margin: -4px 0 14px;">Style DNA is a local-only writing-preference profile, separate from the notes above. Set it by hand below for free, or let WriteFlow learn it from your edits automatically (Pro) — never sent anywhere except as part of a normal generation, same as your writing samples.</p>
+
+    <div class="row">
+      <label style="display:flex; align-items:center; gap:8px; font-weight:500;">
+        <input type="checkbox" id="styleDNALearningEnabled" style="width:auto;" /> Learn from my edits <span class="tier-pill pro" id="style-dna-learning-lock-badge" style="display:none;">PRO</span>
+      </label>
+      <div class="help">Off by default. When on, WriteFlow compares what it suggested to what you actually kept, and adjusts the profile below a little at a time.</div>
+      <!-- Milestone 16, Batch 2: learning is Pro; the manual sliders below
+           stay free for everyone -- "limited Style DNA" for free means
+           manual-only, not a reduced slider set, which felt like a more
+           honest read of the spec than arbitrarily hiding some sliders. -->
+      <p class="help" id="style-dna-learning-upsell" style="display:none;">Automatic learning from your edits is a Pro feature. <a href="#" id="style-dna-learning-upgrade-link" style="color: var(--accent); font-weight: 600;">Upgrade to Pro</a> to turn it on. The sliders below are free either way.</p>
+    </div>
+
+    <div class="row">
+      <div class="wf-dna-row">
+        <label for="dna-brevity">Concise</label>
+        <input type="range" id="dna-brevity" min="0" max="100" value="50" />
+        <span class="wf-dna-value" id="dna-brevity-value">50%</span>
+      </div>
+      <div class="wf-dna-row">
+        <label for="dna-conversational">Conversational</label>
+        <input type="range" id="dna-conversational" min="0" max="100" value="50" />
+        <span class="wf-dna-value" id="dna-conversational-value">50%</span>
+      </div>
+      <div class="wf-dna-row">
+        <label for="dna-formality">Formal</label>
+        <input type="range" id="dna-formality" min="0" max="100" value="50" />
+        <span class="wf-dna-value" id="dna-formality-value">50%</span>
+      </div>
+      <div class="wf-dna-row">
+        <label for="dna-warmth">Warm</label>
+        <input type="range" id="dna-warmth" min="0" max="100" value="50" />
+        <span class="wf-dna-value" id="dna-warmth-value">50%</span>
+      </div>
+      <div class="wf-dna-row">
+        <label for="dna-emojiFrequency">Emoji use</label>
+        <input type="range" id="dna-emojiFrequency" min="0" max="100" value="50" />
+        <span class="wf-dna-value" id="dna-emojiFrequency-value">50%</span>
+      </div>
+    </div>
+
+    <div class="wf-dna-select-row">
+      <div>
+        <label for="dna-sentenceLength">Sentence length</label>
+        <select id="dna-sentenceLength">
+          <option value="short">Short</option>
+          <option value="medium">Medium</option>
+          <option value="long">Long</option>
+        </select>
+      </div>
+      <div>
+        <label for="dna-vocabularyComplexity">Vocabulary</label>
+        <select id="dna-vocabularyComplexity">
+          <option value="simple">Simple</option>
+          <option value="medium">Medium</option>
+          <option value="rich">Rich</option>
+        </select>
+      </div>
+    </div>
+    <div class="wf-dna-select-row">
+      <div>
+        <label for="dna-greetingStyle">Greetings</label>
+        <select id="dna-greetingStyle">
+          <option value="minimal">Minimal</option>
+          <option value="medium">Medium</option>
+          <option value="warm">Warm</option>
+        </select>
+      </div>
+      <div>
+        <label for="dna-signoffStyle">Sign-offs</label>
+        <select id="dna-signoffStyle">
+          <option value="minimal">Minimal</option>
+          <option value="medium">Medium</option>
+          <option value="warm">Warm</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="display:flex; justify-content: space-between; align-items:center;">
+      <span class="help" id="styleDNA-samples-note" style="margin-top:0;"></span>
+      <button class="ghost" id="reset-style-dna" type="button">Reset Style DNA</button>
+    </div>
+    <div class="help" id="reset-style-dna-status" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Disabled Sites</div>
+    <ul id="blocklist"></ul>
+    <div class="help" id="blocklist-empty">No sites disabled yet — use "Disable on this site" from the popup.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Privacy &amp; Data</div>
+    <p style="font-size: 12.5px; line-height: 1.6; margin: 0 0 14px; color: var(--ink);">
+      Writing samples, style notes, your API key, and settings are stored only in this browser
+      (<code>chrome.storage.local</code>). When you generate a suggestion, relevant text — and,
+      for context-aware replies, nearby post or email content — is sent directly to your selected
+      AI provider. If you verify a Pro licence, your licence key is sent to Gumroad. WriteFlow
+      has no AI proxy server and does not receive your writing requests.
+    </p>
+    <div class="row" style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
+      <a class="key-link" href="https://github.com/Anishupreti/WriteFlow-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener">Privacy policy →</a>
+      <a class="key-link" href="mailto:helloanishupreti@gmail.com">Contact support →</a>
+    </div>
+    <div class="row" style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button class="ghost" id="clear-feedback" type="button">Clear feedback history</button>
+      <button class="ghost" id="delete-all-data" type="button" style="color: #C4432A;">Delete all local data</button>
+    </div>
+    <div class="help" id="privacy-action-status" role="status" aria-live="polite"></div>
+  </div>
+  </div>
+
+  <script src="../services/license.js"></script>
+  <script src="../services/key-validator.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
