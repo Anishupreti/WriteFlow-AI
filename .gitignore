@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Test artifacts
+tests/browser-results.json
+
+# Packaged builds (built fresh for each Release, not committed)
+*.zip

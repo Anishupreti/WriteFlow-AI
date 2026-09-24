@@ -1,0 +1,53 @@
+WriteFlow AI — Source-Available License
+
+Copyright (c) 2026 WriteFlow AI. All rights reserved.
+
+This repository is made publicly viewable so that anyone considering using
+WriteFlow AI can inspect exactly what the extension does — especially how
+it handles API keys and personal data, given its "bring your own key"
+design. Visibility is the point; free reuse is not.
+
+1. Permitted
+
+   - Viewing, reading, and auditing the source code in this repository.
+   - Downloading and running the extension, as distributed via this
+     repository's Releases, for your own personal or internal business use,
+     subject to the Free/Pro terms described in README.md.
+   - Forking this repository on GitHub solely for the purpose of submitting
+     proposed changes back via a pull request, or for personal, private,
+     non-distributed backup/reference copies.
+   - Quoting short excerpts of the code for commentary, criticism, or
+     educational purposes, with attribution.
+
+2. Not permitted, without prior written permission
+
+   - Copying, modifying, merging, publishing, distributing, sublicensing,
+     or selling copies of the source code, in whole or in part.
+   - Publishing a modified or repackaged version of this extension, under
+     this name or any other, to the Chrome Web Store, any other extension
+     marketplace, or any other distribution channel.
+   - Using this source code, in whole or in part, as the basis for a
+     competing product or service.
+   - Removing or altering any copyright, license, or attribution notice
+     from the source code.
+
+3. No warranty
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+   DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+4. Contact
+
+   For permission requests, licensing inquiries, or anything not covered
+   above, open an issue on this repository or contact the maintainer
+   directly.
+
+---
+
+Note: this license was drafted to be clear rather than to substitute for
+legal advice. If you intend to enforce it commercially at scale, or have
+questions about how it applies to a specific situation, it's worth having
+a lawyer review it before you rely on it.

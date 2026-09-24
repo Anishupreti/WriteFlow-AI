@@ -1,0 +1,21 @@
+{
+  "name": "writeflow-ai",
+  "version": "0.18.0",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run.cjs",
+    "build": "node tests/build.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.1",
+    "playwright": "^1.58.2"
+  },
+  "description": "An incremental upgrade of the supplied **0.15.5** archive. Milestone 2 has not been implemented. Existing tailored reply analysis was already present and is retained.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

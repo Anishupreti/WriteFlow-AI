@@ -1,0 +1,106 @@
+{
+  "manifest_version": 3,
+  "name": "WriteFlow AI",
+  "version": "0.18.0",
+  "description": "AI writing wherever you type. Bring your own API key \u2014 nothing is sent to any server but your chosen AI provider.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mail.google.com/*",
+        "https://outlook.live.com/*",
+        "https://outlook.office.com/*",
+        "https://outlook.office365.com/*",
+        "https://linkedin.com/*",
+        "https://*.linkedin.com/*",
+        "https://twitter.com/*",
+        "https://*.twitter.com/*",
+        "https://x.com/*",
+        "https://*.x.com/*",
+        "https://app.slack.com/*",
+        "https://facebook.com/*",
+        "https://*.facebook.com/*",
+        "https://reddit.com/*",
+        "https://*.reddit.com/*",
+        "https://youtube.com/*",
+        "https://*.youtube.com/*",
+        "https://web.whatsapp.com/*",
+        "https://instagram.com/*",
+        "https://*.instagram.com/*",
+        "https://threads.net/*",
+        "https://*.threads.net/*",
+        "https://tiktok.com/*",
+        "https://*.tiktok.com/*",
+        "https://pinterest.com/*",
+        "https://*.pinterest.com/*",
+        "https://discord.com/*",
+        "https://*.discord.com/*",
+        "https://bsky.app/*",
+        "https://quora.com/*",
+        "https://*.quora.com/*",
+        "https://tumblr.com/*",
+        "https://*.tumblr.com/*",
+        "https://medium.com/*",
+        "https://*.medium.com/*",
+        "https://substack.com/*",
+        "https://*.substack.com/*"
+      ],
+      "js": [
+        "services/storage.js",
+        "services/style-learning.js",
+        "services/context-model.js",
+        "services/promptBuilder.js",
+        "services/ai.js",
+        "content/detector.js",
+        "content/adapters.js",
+        "content/context-dom.js",
+        "content/platform-adapters.js",
+        "content/context-extractors.js",
+        "content/ui.js",
+        "content/index.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "permissions": [
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://api.gumroad.com/*",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.groq.com/*",
+    "https://openrouter.ai/*"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
+  "commands": {
+    "open-writeflow": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space",
+        "mac": "Command+Shift+Space"
+      },
+      "description": "Open WriteFlow on the focused text field"
+    }
+  }
+}
