@@ -1,125 +1,106 @@
-<div align="center">
+# WriteFlow AI 0.16.0 — Milestone 1
 
-# WriteFlow AI
+An incremental upgrade of the supplied **0.15.5** archive. Milestone 2 has not been implemented. Existing tailored reply analysis was already present and is retained.
 
-**Understand the conversation. Know what to say. Write it like you.**
+## Install for evaluation
 
-An AI writing copilot that lives inside your browser — on Gmail, LinkedIn, Slack, Reddit, and everywhere else you type. Bring your own API key. There is no WriteFlow server in between.
+Extract the release ZIP, open `chrome://extensions`, enable Developer mode, choose **Load unpacked**, and select the folder containing `manifest.json`. Reload existing site tabs after updating. No build/transpilation is required. Use Mock provider for a local, no-key trial. This is an evaluation build: authenticated live-site and packaged-extension acceptance remain outstanding.
 
-[Download the latest release](../../releases/latest) · [Report an issue](../../issues) · [Changelog](CHANGELOG.md)
+## Architecture
 
-</div>
+The existing Manifest V3 structure and `window.WriteFlow` namespace remain intact:
 
----
+- `content/detector.js`: delegated editor focus detection and sensitive-field exclusion.
+- `content/adapters.js`: text editing, native input value setter, contenteditable insertion and Gmail line formatting.
+- `content/context-dom.js`: composed-tree traversal, visibility and strict composer association.
+- `content/platform-adapters.js`: 19 independent selector definitions behind one adapter contract. Each exposes detection, editor discovery, context/conversation extraction, audience hints, metadata and capabilities. Generic writing exposes no automatic context capability.
+- `content/context-extractors.js`: compatibility facade for the existing UI.
+- `services/context-model.js`: DOM-free normalization and serialization; a shared 6,000-character context budget and at most six prior messages. The target is preserved before allocating the remaining budget to recent messages. Serialization also caps labels and text together.
+- `services/promptBuilder.js`: existing writing/social/email prompts consume normalized objects or manually pasted strings. DOM selectors never enter this layer.
+- `content/ui.js`: existing Shadow DOM UI, generation/cancellation, reply/rewrite, result actions and per-field undo. Context-analysis caches remain in memory, now capped at 20 entries each. Active UI is checked every 250 ms for navigation/editor removal; this checks one field, not the whole page.
+- `services/ai.js`: existing direct BYOK providers and one configured fallback, unchanged.
+- `services/storage.js`, `services/license.js`, options, popup and service worker: retained local settings, Gumroad licensing and existing UI. Dynamically registered scripts get the new dependency order on upgrade.
 
-## What it does
+## Context model
 
-Click into any text field on a supported site, and a small **✦** icon appears. Click it, and WriteFlow can:
+```js
+{
+  platform: 'linkedin', type: 'post_reply',
+  author: { name: '', role: '' },
+  content: { primaryText: '', parentText: '', quotedText: '' },
+  conversation: [{ author: '', direction: 'unknown', text: '' }],
+  metadata: { title: '', timestamp: '', url: '' }
+}
+```
 
-- **Rewrite** what you've already typed — shorter, more professional, friendlier, simpler, and more
-- **Draft a reply** to a post or comment it reads on the page, with reply angles tailored to what that specific post actually says (Pro)
-- **Write something from scratch** — describe what you want to say, and it drafts the message, even into a completely empty field
-- **Reply to an email thread**, using the actual conversation history, not just the last message
-- **Match your own writing style** over time, entirely on your device — no cloud profile, nothing sent anywhere but the AI provider you chose
+Unknown metadata stays empty. Relationships are not inferred. URL metadata drops query strings and fragments and is not included in the prompt serialization. Context is read only when requested; gaining focus makes no AI request. Existing Pro analysis may call the provider after the user opens a reply panel.
 
-Every suggestion is shown to you first. WriteFlow never posts, sends, or submits anything on its own — you always click Replace, Insert, or Copy yourself.
+Association must be an enclosing post/comment/thread, an explicit quote in the active email reply, or a single visible source in the same dialog. Missing/ambiguous markup returns `null`. There is no nearest-post, first-post, longest-text, or whole-document email fallback. This intentionally reduces automatic coverage when association cannot be established. Social reply panels retain manual paste; email falls back to writing.
 
-## Why "bring your own key"
+## Verification matrix
 
-WriteFlow has no server of its own. When you generate a suggestion, the relevant text goes **directly from your browser to the AI provider you picked** (OpenAI, Anthropic, Google Gemini, Groq, or OpenRouter) — using an API key you provide and that stays on your device. Nobody else's server sees your writing in between.
+**F = synthetic browser fixture passed, not live-site certification.** All platforms below have generic writing through the shared editor layer. No authenticated service was verified. Layout variants outside the selector contract may require manual context. New Priority 2/3 definitions are provisional and need real DOM snapshots before production claims.
 
-This also means:
-- No account, no sign-up, no cloud storage of anything you write
-- Free-tier providers (Gemini, Groq, OpenRouter) mean you can use WriteFlow at effectively no cost
-- If your chosen provider has an outage, an optional backup provider can pick up automatically (Pro)
+| Platform | Writing | Context | Conversation | Smart Compose |
+|---|---|---|---|---|
+| LinkedIn | Shared editor F | F; nested reply | No | No |
+| X/Twitter | Shared editor F | F; associated tweet/dialog | No | No |
+| Facebook | Shared editor F | F; explicit body/comment hooks | No | No |
+| Reddit | Shared editor F | F; composed-tree reply | No | No |
+| YouTube | Shared editor F | F; associated video/comment | No | No |
+| Gmail | Shared editor F | F; thread/explicit quote | F; scoped recent messages | No |
+| Outlook | Shared editor F | F; thread/explicit quote | F; scoped recent messages | No |
+| Slack | Shared editor F | F; scoped messages | F | No |
+| WhatsApp | Shared editor F | F; active chat | F | No |
+| Instagram | Shared editor F | F; provisional caption hooks | No | No |
+| Threads | Shared editor F | F; provisional post hooks | No | No |
+| TikTok | Shared editor F | F; provisional video hooks | No | No |
+| Discord | Shared editor F | F; provisional chat container | F | No |
+| Bluesky | Shared editor F | F; provisional feed hooks | No | No |
+| Quora | Shared editor F | F; provisional answer hooks | No | No |
+| Medium | Shared editor F | F; enclosing article only | No | No |
+| Substack | Shared editor F | F; enclosing post only | No | No |
+| Tumblr | Shared editor F | F; provisional post hooks | No | No |
+| Pinterest | Shared editor F | F; provisional pin hooks | No | No |
+| Other permitted sites | Shared editor F | Manual only | No | No |
 
-See [Privacy](#privacy) below for the full picture.
+Manifest coverage remains unchanged. Custom domains and domains absent from the original manifest require the existing per-site permission flow. Closed Shadow DOM and cross-origin frames are not supported. Editor discovery is lazy; `findEditors` is not a background full-page scan.
 
-## Installation
+## Providers, privacy and licensing
 
-WriteFlow isn't on the Chrome Web Store yet — for now, install it directly from a GitHub Release:
+OpenAI, Anthropic, Gemini, Groq, OpenRouter and Mock remain available. Real API calls go directly from the isolated content script to the chosen provider; fallback uses the user's configured second provider/key. No WriteFlow backend, account, analytics server, remote prompt store or extra extension permissions were added. Keys and writing samples stay in `chrome.storage.local`; keys are not added to host-page DOM. Selected writing/context and optional samples go to the chosen AI provider when generating. Pro verification separately contacts Gumroad, as before.
 
-1. Go to the [**Releases**](../../releases/latest) page and download the `.zip` file under the latest release
-2. Unzip it — you'll get a folder containing `manifest.json` and the extension's files
-3. Open Chrome and go to `chrome://extensions`
-4. Turn on **Developer mode** (top-right toggle)
-5. Click **Load unpacked**, and select the unzipped folder
-6. The WriteFlow icon should appear in your toolbar — pin it for easy access
+## Free vs Pro (accurate as of Milestone 16, v0.17.9)
 
-You'll need to repeat steps 1–5 for future updates, since this isn't on the auto-updating Chrome Web Store yet.
+Generated by re-reading the actual gating in the code, not by memory — see CHANGELOG.md's Milestone 16 entries for exactly what changed and why.
 
-## Setup
+**Free:**
+- Rewrite, Shorten, Grammar (the three base writing commands)
+- The allowlisted basic social reply strategies (see `FREE_SOCIAL_STYLE_IDS` in services/storage.js)
+- Translation (fixed in Milestone 16, Batch 1 — was incorrectly Pro-locked before)
+- Write It For Me (Milestone 3), all scenarios, all platforms — deliberately free, core writing functionality
+- Style DNA: manual sliders/dropdowns (Milestone 4) — set your own profile by hand
+- One active AI provider
 
-The first time you open WriteFlow's settings (click the toolbar icon → the gear icon, or right-click the icon → Options), a short setup walks you through:
-
-1. **Pick a provider.** Gemini and Groq are both free with no credit card — the easiest place to start.
-2. **Get a key.** A button takes you straight to that provider's key page.
-3. **Paste it in.** WriteFlow checks it works before you continue.
-4. **Try it.** Open Gmail, LinkedIn, or Reddit and click into any text box.
-
-If you'd rather skip setup for now, WriteFlow works with a built-in "Mock" mode with no key needed, so you can try the interface before committing to a provider.
-
-## Supported platforms
-
-WriteFlow's core rewriting/writing tools work on every site listed below. The richer **Smart Reply** feature (reading the actual post/thread and suggesting tailored reply angles) is implemented for all of them too, though — being honest — some platforms' page structure changes are more thoroughly tested against than others. If Smart Reply doesn't detect a post correctly somewhere, it falls back to a simple "paste the post here" box rather than failing silently, and [reporting it as an issue](../../issues) helps get it fixed.
-
-| Category | Sites |
-|---|---|
-| Email | Gmail, Outlook |
-| Social | LinkedIn, X/Twitter, Facebook, Reddit, Instagram, Threads, TikTok, Bluesky, Quora, Tumblr, Pinterest |
-| Chat | Slack, WhatsApp Web, Discord |
-| Publishing | Medium, Substack |
-| Video | YouTube |
-| Anywhere else | Click "Enable WriteFlow here" in the popup to add any other site with one click |
-
-## Free vs Pro
-
-**Free, no account needed:**
-- Rewrite, Shorten, Fix grammar
-- Write It For Me (drafting from a blank field, on any site)
-- Translation
-- Basic reply styles on social platforms
-- Manually set your own writing-style profile (Style DNA)
-- One AI provider at a time
-
-**Pro** (one-time purchase, license key, no subscription):
-- Smart Reply 2.0 — reads the actual post/email and suggests tailored reply angles, with audience detection you can correct
+**Pro:**
+- Full Smart Reply 2.0: context analysis, dynamic per-post reply strategies, audience detection + correction (Milestones 2, 5)
 - Custom instructions and saved prompts
-- Style DNA that learns automatically from the edits you make to suggestions
-- A backup AI provider, for automatic failover if your primary one is down
+- Style DNA: automatic learning from your edits (Milestone 4, Batch 2) — gated in Milestone 16, Batch 2
+- Backup/fallback provider setup (Milestone 16, Batch 1) — gated going forward; anyone who configured one before this gate existed keeps it working, only new setup is blocked for free accounts
+- Multi-level comment-thread context (Milestone 6) is available to Pro accounts as part of the Smart Reply 2.0 analysis flow; the underlying extraction itself is not separately gated
 
-## Privacy
+Dynamic adjustment chips (Milestone 7) and the Natural Writing baseline (Milestone 8) are NOT tier-gated — available to whichever tier the underlying generation itself already belongs to. This was a deliberate scope decision at the time, not an oversight.
 
-Full details in [PRIVACY.md](PRIVACY.md). The short version:
+The local tier flag (`tier` in chrome.storage.local, set after Gumroad license verification) is not tamper-proof entitlement enforcement — this is an inherent trade-off of the BYOK, no-backend architecture (see the Known limitations section elsewhere in this README/CHANGELOG for the fuller discussion). Saved prompts (12), writing samples (3), and feedback metadata (100) retain their existing local caps.
 
-- **No account.** No sign-up, no login, nothing to lose access to.
-- **API keys never leave your device** except in the request you send directly to your chosen AI provider.
-- **No WriteFlow server.** There is nothing in between your browser and the AI provider.
-- **Nothing is stored in the cloud.** Your writing samples, style profile, saved prompts, and settings live in Chrome's local storage on your machine only.
-- **You're in control.** WriteFlow never sends, posts, or submits anything automatically — every suggestion needs your click.
+**A known gap, stated plainly:** most of this README predates Milestones 2 through 16 (it's still titled "Milestone 1" above) and describes the codebase as it stood then — the architecture/context-model/verification-matrix sections above have NOT been kept current. CHANGELOG.md is the accurate, up-to-date record of everything built since. A full README rewrite covering the current architecture is worth doing before an actual store release, but wasn't attempted here to avoid claiming accuracy for a document this large without the same verification rigor applied to the rest of this milestone.
 
-## Troubleshooting
+## Tests
 
-**The ✦ icon doesn't show up on a field.** Make sure the site is in the supported list above, or use "Enable WriteFlow here" from the popup for other sites. Very small fields (like a search box) are intentionally skipped.
+`npm run build` runs syntax, package asset, version and static/dynamic script-order checks. Runtime production code has no npm dependencies.
 
-**"Post text could not be detected."** This means the page's structure didn't match what WriteFlow expected — you can paste the post text in manually and generation still works. [Reporting the site/page](../../issues) helps improve detection there.
+`npm install` then `npx playwright install chromium` and `npm test` run browser tests. Set `CHROME_PATH` to a Chrome executable to test that installation. The test runner uses only synthetic local pages, mocked storage and mocked provider/license responses; it does not send paid AI requests or access real accounts.
 
-**A provider error appears.** Double-check your API key in Settings, and confirm the provider you picked still supports the model WriteFlow is using — free-tier model availability can shift over time. A configured backup provider (Pro) will kick in automatically on most transient failures.
+For an interactive run without Playwright process launch: run `node tests/create-browser-harness.cjs`, then `python tests/serve.py`, and open `http://127.0.0.1:8765/tests/browser.html`. Results are saved in `tests/browser-results.json`. The preview controls apply the exact light/dark palette rules for inspection without changing browser/OS settings.
 
-**Something else.** [Open an issue](../../issues) with what you were doing, what you expected, and what happened instead.
-
-## Contributing
-
-This repository is source-available so you can see exactly what the extension does with your data — see [LICENSE](LICENSE) for what that does and doesn't permit. Bug reports and feature suggestions are very welcome via [Issues](../../issues).
-
-## License
-
-Source-available, all rights reserved — see [LICENSE](LICENSE).
-
----
-
-<div align="center">
-
-Built with a **BYOK, no-backend** architecture, on purpose.
-
-</div>
+See `MILESTONE-1-REPORT.md` for measured results, known defects and outstanding acceptance work. Passing fixtures does not establish compatibility with every React editor, authenticated platform, real provider model, or Chrome extension integration.
