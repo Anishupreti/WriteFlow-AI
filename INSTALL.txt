@@ -1,0 +1,7 @@
+WriteFlow AI 0.20.0 — Chrome installation
+
+1. Extract this ZIP into a NEW folder.
+2. Open chrome://extensions in Chrome and turn on Developer mode.
+3. Choose Load unpacked and select the extracted folder.
+
+The selected folder must contain manifest.json directly. Do not select the ZIP itself or a parent folder.

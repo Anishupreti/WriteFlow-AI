@@ -1,3 +1,40 @@
+# 0.21.0 — Review decisions, capture as answer, and fixes
+
+- Ask AI sends earlier rounds (and disputed/withdrawn source citations) as context, newest kept within a budget; the prompt treats terse instructions as complete and asks the model to name any earlier answer that no longer holds.
+- Review answers get a 4,000-token output budget on Anthropic and Gemini; writing commands keep 1,000.
+- Closing an item requires a short decision note, stored on the status event and shown on the board, the detail view and the history.
+- A captured selection can be attached to an existing item as a new answered round with its source link.
+- New *Export decisions (Markdown)* for shared pages; JSON remains the full backup. Backups from 0.20.0 still restore.
+- Fixed: workspace footer, README and PRIVACY text that said the workspace made no AI calls.
+- Fixed: `fflate` missing from devDependencies (Excel import test failed on a clean install); ambiguous Ask AI selector in the workflow browser test.
+
+# 0.20.0 — Review rounds, sources, backup restore and register import
+
+- Immutable instruction–answer pairs and retryable pending requests. Explain, Quantify, Challenge and Custom call existing BYOK providers from the workspace. Mock replies remain visibly labelled demonstrations.
+- Sources tied to answer-round IDs; proposition, URL, citation, status and review history. Disputed evidence highlights affected items.
+- Validated, transactional JSON restore with legacy backup support.
+- First-sheet .xlsx register import with preview, stable IDs and historical pairs. Import is atomic and does not rewrite existing items.
+- Local ZIP parser vendored with its MIT licence. No new browser permission or backend.
+
+# 0.19.1 — Review Workspace interface refinement
+
+- New project sidebar, capture inbox, compact register and status filter cards.
+- Search by item ID, statement or source; combined search/status filters and helpful empty states.
+- Detail drawer with focus containment, Escape dismissal, focus return and full-width narrow-screen layout.
+- Collapsible item entry retains unsaved text while hidden.
+- Remembered project/item selection and System/Light/Dark preference.
+- Accessible control labels, live feedback, keyboard search shortcut and reduced-motion support.
+- No new permission, provider or storage schema changes.
+
+# 0.19.0 — Review Workspace, milestone 1
+
+- Local projects, stable review IDs and Open/Pending/Closed sections.
+- Explicit selection capture with source provenance and an editable preview before saving.
+- Immutable saved statements/original captures and appended status history.
+- Transactional local database and JSON record export.
+- Popup entry point; new contextMenus permission; no review AI calls.
+- This is an evaluation milestone, not completion of the full Review Workspace roadmap.
+
 # Changelog
 
 ## 0.18.1 — GitHub release correction

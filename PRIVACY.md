@@ -59,3 +59,15 @@ If WriteFlow's architecture changes in a way that affects this policy (for examp
 ## Contact
 
 Questions about this policy can be raised via [Issues](../../issues) on this repository.
+
+## Review Workspace (0.19.0)
+Review projects, statements, selected text, source page titles, sanitised URLs and status history are stored locally in the extension's IndexedDB. Capture happens only through the selection context menu or manual entry. Source URLs omit credentials, query strings and fragments; selected text itself may contain sensitive data. This milestone made no AI or other network request; see 0.20.0 below for Ask AI. Discarding a pending capture removes it. Saved review items have no delete/restore controls in this evaluation milestone; removing the extension removes its local database. JSON export contains all projects, captures and history: store it privately. There is no cloud backup or cross-device sync.
+
+### Review appearance preferences (0.19.1)
+The workspace also stores the selected theme, project ID and item ID in localStorage within the extension. These interface preferences are local and are not sent to providers.
+
+## Review analysis and import (0.20.0)
+An .xlsx or JSON file selected by the user is parsed locally and is not uploaded to WriteFlow. When the user chooses Ask AI for a review round, the item statement, exact instruction and up to 4,000 characters of the captured excerpt, plus a source URL if present, are sent directly to the selected AI provider using the user's configured key. The provider's answer is saved locally beside the instruction. Source review status is a human-entered assessment. Mock generates a local demonstration answer and makes no provider request. Review JSON exports include all item text, rounds and source data; handle them as sensitive.
+
+## Review decisions and capture (0.21.0)
+Ask AI now also sends the item's earlier review rounds (instructions and answers, up to about 24,000 characters) and the citations of sources you marked disputed or withdrawn. A selection attached to an item as a captured answer is stored locally with its page title and sanitised URL; it is sent to the provider only as part of a later Ask AI round on that item. Decision notes are stored locally with the status history. *Export decisions* creates a Markdown file (and a clipboard copy where the browser allows) containing closed items, decisions, source citations and links; nothing is uploaded, but treat the export as sensitive when you share it.
