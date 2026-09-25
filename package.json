@@ -21,7 +21,7 @@
     "jsdom": "^30.1.1",
     "playwright": "^1.58.2"
   },
-  "description": "Browser writing assistant with user-selected AI provider and contextual replies.",
+  "description": "Browser writing assistant with contextual replies, plus a local Review Workspace for AI-assisted reviews, using the user's own AI provider.",
   "main": "index.js",
   "directories": {
     "test": "tests"
