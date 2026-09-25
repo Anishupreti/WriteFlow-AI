@@ -253,6 +253,14 @@ function createShadowRoot() {
   const style = document.createElement("style");
   style.textContent = STYLES;
   shadow.appendChild(style);
+  // Keys typed inside WriteFlow stay inside WriteFlow. From outside the
+  // shadow root the focused element looks like this plain <div>, so page
+  // shortcut layers (Facebook, Messenger, Gmail…) treat letters as
+  // shortcuts, cancel them or pull focus into their own composer. Our own
+  // handlers run first, inside the shadow tree, before the event gets here.
+  for (const type of ["keydown", "keypress", "keyup"]) {
+    host.addEventListener(type, (e) => e.stopPropagation());
+  }
   document.documentElement.appendChild(host);
   return shadow;
 }
@@ -1482,7 +1490,10 @@ window.WriteFlow.UI = (function () {
     el.addEventListener("keydown", (e) => {
       if (e.key === "Escape") { e.preventDefault(); removePanel(); return; }
       const items = focusables();
-      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && items.length) {
+      // Arrows move the caret while typing; they only step between controls
+      // when a button (or other non-text control) has focus.
+      const typing = e.target.matches?.("textarea, input:not([type=button]):not([type=checkbox]):not([type=radio])") || e.target.isContentEditable;
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && items.length && !typing) {
         const i = items.indexOf(shadow.activeElement);
         e.preventDefault();
         items[(i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();

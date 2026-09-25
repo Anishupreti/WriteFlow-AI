@@ -2,6 +2,12 @@
 
 Newest first.
 
+## 0.21.1 — Typing fix on sites with keyboard shortcuts
+
+- Fixed: on Facebook, Messenger and other sites with single-key shortcuts, some letters typed into WriteFlow's own boxes disappeared or went to the page's chat box. Key presses inside WriteFlow no longer reach the page's shortcut handlers.
+- Fixed: Arrow Up/Down in WriteFlow's text boxes jumped to another button instead of moving the cursor. Arrows still move between buttons when a button has focus.
+- New test: `npm run test:keyboard` (a page with Facebook-style shortcuts).
+
 ## 0.21.0 — Review decisions, capture as answer, and fixes
 
 - Ask AI sends earlier rounds (and disputed/withdrawn source citations) as context, newest kept within a budget; the prompt treats terse instructions as complete and asks the model to name any earlier answer that no longer holds.
