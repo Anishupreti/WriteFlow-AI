@@ -123,24 +123,28 @@ The local tier flag (`tier` in chrome.storage.local, set after Gumroad license v
 
 For an interactive run without Playwright process launch: run `node tests/create-browser-harness.cjs`, then `python tests/serve.py`, and open `http://127.0.0.1:8765/tests/browser.html`. Results are saved in `tests/browser-results.json`. The preview controls apply the exact light/dark palette rules for inspection without changing browser/OS settings.
 
-See `MILESTONE-1-REPORT.md` for measured results, known defects and outstanding acceptance work. Passing fixtures does not establish compatibility with every React editor, authenticated platform, real provider model, or Chrome extension integration.
+See CHANGELOG.md for the release history and REVIEW-0.20.0-REPORT.md / REVIEW-UI-REPORT.md for Review Workspace test notes. Passing fixtures does not establish compatibility with every React editor, authenticated platform, real provider model, or Chrome extension integration.
 
-## Review Workspace — milestone 1
+## Review Workspace release notes
+
+What each Review Workspace release added, oldest first. The overview at the top describes the current feature set.
+
+### 0.19.0 — Workspace foundation
 Open **Review Workspace** in the popup, create a project, and add an item. On an HTTP(S) webpage select text and use **Save selection to Review** in the context menu. Review the capture and choose its project before saving. Capture works independently of automatic writing-site permissions. Captured URLs omit query strings/fragments/credentials; full original selected text is retained.
 
-Items receive globally increasing R-IDs. Their statements and original captures remain fixed; changing Open/Pending/Closed appends a status event. IndexedDB transactions prevent concurrent tabs from losing saves or duplicating IDs. The new `contextMenus` permission enables explicit capture. This milestone made no AI calls; from 0.20.0, Ask AI sends a review round to the selected provider (see below). The workspace is available without a Pro gate in this evaluation milestone.
+Items receive globally increasing R-IDs. Their statements and original captures remain fixed; changing Open/Pending/Closed appends a status event. IndexedDB transactions prevent concurrent tabs from losing saves or duplicating IDs. The new `contextMenus` permission enables explicit capture. This milestone made no AI calls; from 0.20.0, Ask AI sends a review round to the selected provider (see below). The workspace had no Pro gate then and still has none.
 
-JSON export is a readable full record, not yet a restore workflow. AI review rounds, source dependencies, Excel import/export, deletion controls and restore are later milestones. Keep exports before uninstalling the extension.
+At 0.19.0, JSON export was a read-only record. Restore, review rounds, sources and Excel import arrived in 0.20.0. Deleting individual items and Excel export are still not available. Keep exports before uninstalling the extension.
 
-## Review Workspace UI update — 0.19.1
+### 0.19.1 — Interface refinement
 A redesigned project sidebar, compact register rows, clickable status summaries, instant search by ID/text/source, guided empty states and an on-demand item form. Details open in a keyboard-accessible drawer, which fills narrow screens; Escape closes it and returns focus. Appearance supports System/Light/Dark, with the chosen project and item remembered locally. Press / outside form fields to focus search. Closing the item form retains unsaved text in the current page, with a leave-page warning; it is not an automatic draft backup.
 
 Run `npm run test:review:ux` for the browser-page UX checks. See REVIEW-UI-REPORT.md for measured tests and remaining limitations.
 
-## Review workflow 0.20.0
+### 0.20.0 — Review rounds, sources, restore and import
 Review item details now include Explain, Quantify, Challenge and Custom rounds using the selected provider. Instructions are stored before sending and answers cannot overwrite earlier answers. Mock output is explicitly marked as demonstration. The entire local review record can be exported and restored from validated JSON. Sources can be linked to answered rounds, marked supported/disputed/withdrawn by the reviewer, and show affected items. An .xlsx import preview reads the first register sheet, retaining R-IDs and E/F review pairs. The workbook's separate Sources sheet is not imported in this release; see REVIEW-ROADMAP.md.
 
-## Review decisions and capture — 0.21.0
+### 0.21.0 — Decisions, capture as answer and round context
 - **Earlier rounds go to the model.** Ask AI now sends the item's earlier instructions and answers (oldest first, most recent kept within a 24,000-character budget), and names any source you marked disputed or withdrawn, so a later round can build on or correct an earlier one. The system prompt treats a few-word instruction as complete.
 - **Longer answers.** Review answers use a 4,000-token output budget on Anthropic and Gemini (writing commands keep 1,000). OpenAI-compatible providers are unchanged.
 - **Closing records a decision.** Moving an item to Closed asks for a few words. The note is stored on the status event, shown on the board and in the item, and kept when an item is reopened and closed again.
