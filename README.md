@@ -1,6 +1,6 @@
 # WriteFlow AI
 
-Current source version: **0.20.0**. This repository includes the extension source and developer tests. The sections below document its architecture and verification history; live-site coverage remains under evaluation.
+Current source version: **0.21.0**. This repository includes the extension source and developer tests. The sections below document its architecture and verification history; live-site coverage remains under evaluation.
 
 ## Install for evaluation
 
@@ -68,7 +68,7 @@ Manifest coverage remains unchanged. Custom domains and domains absent from the 
 
 ## Providers, privacy and licensing
 
-OpenAI, Anthropic, Gemini, Groq, OpenRouter and Mock remain available. Real API calls go directly from the isolated content script to the chosen provider; fallback uses the user's configured second provider/key. No WriteFlow backend, account, analytics server, remote prompt store or extra extension permissions were added. Keys and writing samples stay in `chrome.storage.local`; keys are not added to host-page DOM. Selected writing/context and optional samples go to the chosen AI provider when generating. Pro verification separately contacts Gumroad, as before.
+OpenAI, Anthropic, Gemini, Groq, OpenRouter and Mock remain available. Real API calls go directly from the isolated content script to the chosen provider; fallback uses the user's configured second provider/key. No WriteFlow backend, account, analytics server or remote prompt store were added. The only permission added since then is `contextMenus` (0.19.0), for Review Workspace capture. Keys and writing samples stay in `chrome.storage.local`; keys are not added to host-page DOM. Selected writing/context and optional samples go to the chosen AI provider when generating. Pro verification separately contacts Gumroad, as before.
 
 ## Free vs Pro (accurate as of Milestone 16, v0.17.9)
 
@@ -108,7 +108,7 @@ See `MILESTONE-1-REPORT.md` for measured results, known defects and outstanding 
 ## Review Workspace — milestone 1
 Open **Review Workspace** in the popup, create a project, and add an item. On an HTTP(S) webpage select text and use **Save selection to Review** in the context menu. Review the capture and choose its project before saving. Capture works independently of automatic writing-site permissions. Captured URLs omit query strings/fragments/credentials; full original selected text is retained.
 
-Items receive globally increasing R-IDs. Their statements and original captures remain fixed; changing Open/Pending/Closed appends a status event. IndexedDB transactions prevent concurrent tabs from losing saves or duplicating IDs. The new `contextMenus` permission enables explicit capture. Nothing is sent to an AI provider by this workspace. The workspace is available without a Pro gate in this evaluation milestone.
+Items receive globally increasing R-IDs. Their statements and original captures remain fixed; changing Open/Pending/Closed appends a status event. IndexedDB transactions prevent concurrent tabs from losing saves or duplicating IDs. The new `contextMenus` permission enables explicit capture. This milestone made no AI calls; from 0.20.0, Ask AI sends a review round to the selected provider (see below). The workspace is available without a Pro gate in this evaluation milestone.
 
 JSON export is a readable full record, not yet a restore workflow. AI review rounds, source dependencies, Excel import/export, deletion controls and restore are later milestones. Keep exports before uninstalling the extension.
 
@@ -119,3 +119,12 @@ Run `npm run test:review:ux` for the browser-page UX checks. See REVIEW-UI-REPOR
 
 ## Review workflow 0.20.0
 Review item details now include Explain, Quantify, Challenge and Custom rounds using the selected provider. Instructions are stored before sending and answers cannot overwrite earlier answers. Mock output is explicitly marked as demonstration. The entire local review record can be exported and restored from validated JSON. Sources can be linked to answered rounds, marked supported/disputed/withdrawn by the reviewer, and show affected items. An .xlsx import preview reads the first register sheet, retaining R-IDs and E/F review pairs. The workbook's separate Sources sheet is not imported in this release; see REVIEW-ROADMAP.md.
+
+## Review decisions and capture — 0.21.0
+- **Earlier rounds go to the model.** Ask AI now sends the item's earlier instructions and answers (oldest first, most recent kept within a 24,000-character budget), and names any source you marked disputed or withdrawn, so a later round can build on or correct an earlier one. The system prompt treats a few-word instruction as complete.
+- **Longer answers.** Review answers use a 4,000-token output budget on Anthropic and Gemini (writing commands keep 1,000). OpenAI-compatible providers are unchanged.
+- **Closing records a decision.** Moving an item to Closed asks for a few words. The note is stored on the status event, shown on the board and in the item, and kept when an item is reopened and closed again.
+- **Capture as an answer.** A selection saved with “Save selection to Review” (for example, the conclusion of an AI chat) can be attached to an existing open or pending item as a new answered round, labelled *Captured — not verified* and linked to the page it came from.
+- **Export decisions.** *Export decisions (Markdown)* downloads, and copies where allowed, a paste-ready summary of the project's closed items with their decisions, sources (disputed ones flagged) and linked conversations, for a shared page such as Notion. The JSON record remains the complete backup.
+
+Run `npm run test:review:decisions` and `npm run test:review:decisions:browser`.

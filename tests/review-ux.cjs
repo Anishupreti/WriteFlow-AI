@@ -20,7 +20,7 @@ const path=require('node:path'),assert=require('node:assert/strict'),fs=require(
  ['Request evidence of the supplier’s quality control process.','pending','Quality assurance'],
  ['Confirm the escalation contact for missed deliveries.','pending','Support policy'],
  ['Resolve the duplicate requirement for monthly reporting.','closed','Reporting requirements']];
- for(const [text,status,title] of records){const draftId=await ReviewStore.draft({text,url:'https://example.com/supplier-review',title});const item=await ReviewStore.create({projectId:p.id,draftId,text});await ReviewStore.status(item.id,status);}
+ for(const [text,status,title] of records){const draftId=await ReviewStore.draft({text,url:'https://example.com/supplier-review',title});const item=await ReviewStore.create({projectId:p.id,draftId,text});await ReviewStore.status(item.id,status,status==='closed'?'Duplicate of R-001':undefined);}
  await ReviewStore.draft({text:'New evidence: the supplier lists a different dispatch window in its latest terms.',url:'https://example.com/terms',title:'Terms'});
  return p.id;
  });

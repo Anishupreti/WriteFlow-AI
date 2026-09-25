@@ -13,7 +13,7 @@ const path=require('node:path'),assert=require('node:assert/strict'),fs=require(
  await page.locator('#statement').fill('<img src=x onerror=alert(1)> Delivery promise'); await page.locator('#save-item').click();
  await page.locator('.item').waitFor(); await page.locator('.item').click(); assert.equal(await page.locator('.item img').count(),0);
  await page.locator('#item-status').selectOption('pending'); await page.waitForFunction(()=>document.querySelector('.pending .item'));
- await page.locator('#item-status').selectOption('closed'); await page.waitForFunction(()=>document.querySelector('.closed .item'));
+ await page.locator('#item-status').selectOption('closed'); await page.locator('#decision-note').fill('Accepted'); await page.locator('#decision-save').click(); await page.waitForFunction(()=>document.querySelector('.closed .item'));
  let state=await page.evaluate(()=>ReviewStore.read()); assert.equal(state.items[0].events.length,3);assert.equal(state.items[0].id,'R-001');
  await page.locator('#close-detail').click();
  const projectId=state.projects[0].id;

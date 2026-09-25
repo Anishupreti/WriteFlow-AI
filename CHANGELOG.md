@@ -1,3 +1,13 @@
+# 0.21.0 — Review decisions, capture as answer, and fixes
+
+- Ask AI sends earlier rounds (and disputed/withdrawn source citations) as context, newest kept within a budget; the prompt treats terse instructions as complete and asks the model to name any earlier answer that no longer holds.
+- Review answers get a 4,000-token output budget on Anthropic and Gemini; writing commands keep 1,000.
+- Closing an item requires a short decision note, stored on the status event and shown on the board, the detail view and the history.
+- A captured selection can be attached to an existing item as a new answered round with its source link.
+- New *Export decisions (Markdown)* for shared pages; JSON remains the full backup. Backups from 0.20.0 still restore.
+- Fixed: workspace footer, README and PRIVACY text that said the workspace made no AI calls.
+- Fixed: `fflate` missing from devDependencies (Excel import test failed on a clean install); ambiguous Ask AI selector in the workflow browser test.
+
 # 0.20.0 — Review rounds, sources, backup restore and register import
 
 - Immutable instruction–answer pairs and retryable pending requests. Explain, Quantify, Challenge and Custom call existing BYOK providers from the workspace. Mock replies remain visibly labelled demonstrations.

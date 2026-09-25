@@ -45,7 +45,8 @@ function renderBoard() {
     const section = node('section', undefined, `group ${status}`); const heading = node('h3'); heading.append(node('i', undefined, `dot ${status}`), node('span', `${status} · ${list.length}`)); section.append(heading);
     for (const item of list) {
       const b = node('button', undefined, 'item'); b.dataset.id = item.id; b.setAttribute('aria-pressed', String(item.id === selectedId)); b.setAttribute('aria-haspopup', 'dialog');
-      const copy = node('span', undefined, 'item-copy'); copy.append(node('span', item.statement, 'item-text'), node('small', `${item.section ? item.section+' · ' : ''}${item.importRef && item.importRef!==item.id ? item.importRef+' · ' : ''}${sourceName(item)} · ${new Date(item.createdAt).toLocaleDateString(undefined,{month:'short',day:'numeric'})}`));
+      const copy = node('span', undefined, 'item-copy'); const decided = ReviewStore.decision(item);
+      copy.append(node('span', item.statement, 'item-text'), ...(decided ? [node('span', 'Decision: ' + decided, 'item-decision')] : []), node('small', `${item.section ? item.section+' · ' : ''}${item.importRef && item.importRef!==item.id ? item.importRef+' · ' : ''}${sourceName(item)} · ${new Date(item.createdAt).toLocaleDateString(undefined,{month:'short',day:'numeric'})}`));
       const arrow = node('span', '›', 'chevron'); arrow.setAttribute('aria-hidden', 'true'); b.append(node('strong', item.id), copy, arrow);
       b.onclick = () => { selectedId = item.id; persistSelection(); renderBoard(); renderDetail(item); $('detail').showModal(); }; section.append(b);
     }
@@ -57,7 +58,7 @@ async function refresh() {
   if (!state.projects.some(p => p.id === projectId)) projectId = state.projects[0]?.id || '';
   $('project').replaceChildren(...state.projects.map(p => { const o = node('option', p.name); o.value = p.id; return o; }));
   if (!projectId) { const placeholder = node('option', 'Create your first project'); placeholder.value = ''; $('project').append(placeholder); }
-  $('project').value = projectId; $('project').disabled = !projectId; $('save-item').disabled = busy || !projectId; $('new-item').disabled = !projectId;
+  $('project').value = projectId; $('project').disabled = !projectId; $('export-decisions').disabled = !projectId; $('save-item').disabled = busy || !projectId; $('new-item').disabled = !projectId;
   $('project-title').textContent = state.projects.find(p => p.id === projectId)?.name || 'A clear place to start.';
   $('project-description').textContent = projectId ? 'Keep the questions, evidence and decisions together.' : 'Create a project to bring your questions and evidence together.';
   if (!projectId) $('project-create').open = true;
@@ -81,9 +82,13 @@ function loadDraft(id) {
   const d = state.drafts[id]; if (!d) return;
   if ($('statement').value.trim() && draftId !== id && !confirm('Replace the unsaved text in the item form?')) return;
   draftId = id; $('statement').value = d.text; $('capture-label').textContent = 'Review captured selection'; $('source-preview').textContent = d.url ? `Source: ${d.url}` : 'No public source URL'; $('cancel-draft').hidden = false;
+  const targets = state.items.filter(i => i.projectId === projectId && i.status !== 'closed');
+  $('attach-item').replaceChildren(...targets.map(i => { const o = node('option', `${i.id} · ${i.statement.slice(0, 60)}`); o.value = i.id; return o; }));
+  if (targets.some(i => i.id === selectedId)) $('attach-item').value = selectedId;
+  $('attach-draft').hidden = !targets.length;
   $('item-form').hidden = false; if (!projectId) { $('project-create').open = true; message('Create a project, then save your captured selection.'); $('project-name').focus(); } else $('statement').focus();
 }
-function resetDraft() { draftId = ''; $('statement').value = ''; $('capture-label').textContent = 'New review item'; $('source-preview').textContent = ''; $('cancel-draft').hidden = true; history.replaceState(null, '', location.pathname); }
+function resetDraft() { $('attach-draft').hidden = true; $('attach-note').value = ''; draftId = ''; $('statement').value = ''; $('capture-label').textContent = 'New review item'; $('source-preview').textContent = ''; $('cancel-draft').hidden = true; history.replaceState(null, '', location.pathname); }
 function renderDetail(item) {
   const focusedId = $('detail').contains(document.activeElement) ? document.activeElement.id : '';
   $('detail').replaceChildren();
@@ -91,8 +96,19 @@ function renderDetail(item) {
   const content = node('div', undefined, 'detail-content'); const notice = node('p', '', 'detail-notice'); notice.id = 'detail-notice'; notice.setAttribute('role', 'status'); content.append(notice); const title = node('h2', 'Review item'); title.id = 'detail-title'; content.append(title, node('div', item.statement, 'statement'));
   const statusSection = node('section', undefined, 'detail-section'); const label = node('label', 'Review status'); label.htmlFor = 'item-status'; const select = node('select'); select.id = 'item-status';
   for (const status of statuses) { const o = node('option', status[0].toUpperCase() + status.slice(1)); o.value = status; select.append(o); } select.value = item.status;
-  select.onchange = () => run(async () => { const next = select.value; select.disabled = true; try { const updated = await ReviewStore.status(item.id, next); await refresh(); renderDetail(updated); message(`${item.id} moved to ${next}.`); } catch (error) { select.value = item.status; throw error; } finally { select.disabled = false; } });
-  statusSection.append(label, select, node('p', 'Each status change is added to the history below.', 'hint')); content.append(statusSection);
+  const decisionForm = node('form', undefined, 'round-form decision-form'); decisionForm.hidden = true;
+  const decisionLabel = node('label', 'Decision'); decisionLabel.htmlFor = 'decision-note';
+  const decisionNote = node('textarea'); decisionNote.id = 'decision-note'; decisionNote.rows = 2; decisionNote.maxLength = 500; decisionNote.required = true; decisionNote.placeholder = 'A few words, e.g. “Accepted: 3% cap applies”.';
+  const decisionSave = node('button', 'Close item', 'primary'); decisionSave.type = 'submit'; decisionSave.id = 'decision-save';
+  const decisionCancel = node('button', 'Cancel', 'secondary'); decisionCancel.type = 'button';
+  decisionForm.append(decisionLabel, decisionNote, decisionSave, decisionCancel);
+  const changeStatus = (next, note) => run(async () => { select.disabled = true; try { const updated = await ReviewStore.status(item.id, next, note); await refresh(); renderDetail(updated); message(`${item.id} moved to ${next}.`); } catch (error) { select.value = item.status; throw error; } finally { select.disabled = false; } });
+  select.onchange = () => { if (select.value === 'closed') { decisionForm.hidden = false; decisionNote.focus(); return; } decisionForm.hidden = true; changeStatus(select.value); };
+  decisionCancel.onclick = () => { decisionForm.hidden = true; select.value = item.status; select.focus(); };
+  decisionForm.onsubmit = e => { e.preventDefault(); changeStatus('closed', decisionNote.value); };
+  statusSection.append(label, select, decisionForm, node('p', 'Each status change is added to the history below. Closing records your decision.', 'hint'));
+  const decided = ReviewStore.decision(item); if (decided) { const box = node('div', undefined, 'decision'); box.append(node('strong', 'Decision'), node('p', decided)); statusSection.append(box); }
+  content.append(statusSection);
   const source = node('section', undefined, 'detail-section'); source.append(node('h3', 'Source & original capture'));
   if (item.source) { if (item.source.url) { const a = node('a', item.source.title || item.source.url); a.href = item.source.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; source.append(a); } source.append(node('p', `Captured ${date(item.source.capturedAt)}`, 'hint')); const details = node('details'); details.append(node('summary', 'Read original selection'), node('pre', item.source.originalText)); source.append(details); }
   else source.append(node('p', 'Added manually. No webpage source was captured.', 'hint')); content.append(source);
@@ -108,13 +124,14 @@ function renderDetail(item) {
   roundForm.onsubmit=e=>{e.preventDefault();run(async()=>{
     const request=await ReviewStore.ask(item.id,mode.value,prompt.value);
     await refresh();if ($('detail').open && selectedId===item.id) renderDetail(state.items.find(i=>i.id===item.id));
-    await generateRound(request.item,request.round);
+    await generateRound(item.id,request.round.id);
   });}; roundsSection.append(roundForm);
   const rounds=item.rounds || []; if (!rounds.length) roundsSection.append(node('p','No review rounds yet. Start with Explain or write a short instruction.','hint'));
   for (const round of [...rounds].reverse()) {
     const entry=node('article',undefined,'round-entry');const header=node('div',undefined,'round-head');header.append(node('strong',round.mode.toUpperCase()),node('small',date(round.at)));entry.append(header,node('p',round.instruction,'round-instruction'));
-    if (round.answer) { entry.append(node('span',round.answer.demonstration?'MOCK DEMONSTRATION':'ANSWER SAVED','answer-label'),node('div',round.answer.text,'answer-text'),node('small',`${round.answer.provider || 'Provider'} · ${date(round.answer.at)}`)); }
-    else { const retry=node('button','Generate pending answer','secondary');retry.type='button';retry.onclick=()=>run(()=>generateRound({id:item.id,statement:item.statement,source:item.source},round));entry.append(node('p','Waiting for an answer. This instruction is preserved.','hint'),retry); }
+    if (round.answer) { entry.append(node('span',round.answer.demonstration?'MOCK DEMONSTRATION':round.mode==='capture'?'CAPTURED — NOT VERIFIED':'ANSWER SAVED','answer-label'),node('div',round.answer.text,'answer-text'),node('small',`${round.answer.provider || 'Provider'} · ${date(round.answer.at)}`));
+      if (round.answer.url) { const a=node('a',round.answer.title || round.answer.url,'capture-link');a.href=round.answer.url;a.target='_blank';a.rel='noopener noreferrer';entry.append(a); } }
+    else { const retry=node('button','Generate pending answer','secondary');retry.type='button';retry.onclick=()=>run(()=>generateRound(item.id,round.id));entry.append(node('p','Waiting for an answer. This instruction is preserved.','hint'),retry); }
     roundsSection.append(entry);
   }
   content.append(roundsSection);
@@ -144,14 +161,25 @@ function renderDetail(item) {
   }
   content.append(sourcesSection);
   const historySection = node('section', undefined, 'detail-section'); historySection.append(node('h3', 'Activity history')); const ol = node('ol', undefined, 'timeline');
-  for (const event of [...item.events].reverse()) { const li = node('li', event.type === 'created' ? 'Item created · Open' : `${event.from} → ${event.status}`); const time = node('time', date(event.at)); time.dateTime = event.at; li.append(time); ol.append(li); } historySection.append(ol); content.append(historySection); $('detail').append(content);
+  for (const event of [...item.events].reverse()) { const li = node('li', event.type === 'created' ? 'Item created · Open' : `${event.from} → ${event.status}${event.note ? ` · “${event.note}”` : ''}`); const time = node('time', date(event.at)); time.dateTime = event.at; li.append(time); ol.append(li); } historySection.append(ol); content.append(historySection); $('detail').append(content);
   if (focusedId && $(focusedId)) $(focusedId).focus();
 }
-async function generateRound(item,round) {
-  const result=await window.WriteFlow.AI.generateReview({item,round});
-  await ReviewStore.answer(item.id,round.id,result);
+// Everything answered before this round goes to the provider, so a later
+// instruction can build on or correct an earlier answer.
+function reviewContext(item,round) {
+  const before=item.rounds.slice(0,item.rounds.findIndex(r=>r.id===round.id));
+  const history=before.map(r=>({mode:r.mode,instruction:r.instruction,answer:r.answer?.text||'',
+    flaggedSources:(state.sources||[]).filter(x=>['disputed','withdrawn'].includes(x.status)&&x.links.some(l=>l.itemId===item.id&&l.roundId===r.id)).map(x=>({citation:x.citation,status:x.status}))}));
+  return {id:item.id,statement:item.statement,source:item.source,history};
+}
+async function generateRound(itemId,roundId) {
+  state=await ReviewStore.read();
+  const item=state.items.find(i=>i.id===itemId),round=item?.rounds.find(r=>r.id===roundId);
+  if (!round) throw new Error('Instruction no longer exists.');
+  const result=await window.WriteFlow.AI.generateReview({item:reviewContext(item,round),round});
+  await ReviewStore.answer(itemId,roundId,result);
   await refresh();
-  if ($('detail').open && selectedId===item.id) renderDetail(state.items.find(i=>i.id===item.id));
+  if ($('detail').open && selectedId===itemId) renderDetail(state.items.find(i=>i.id===itemId));
   message(result.demonstration ? 'Mock demonstration saved. No sources were checked.' : 'Answer saved to this instruction.');
 }
 function clearFilters() { filter = 'all'; $('search').value = ''; renderBoard(); $('search').focus(); }
@@ -163,6 +191,12 @@ $('hide-composer').onclick = () => { $('item-form').hidden = true; $('new-item')
 $('project-form').onsubmit = e => { e.preventDefault(); run(async () => { const p = await ReviewStore.project($('project-name').value); projectId = p.id; selectedId = ''; filter = 'all'; $('search').value = ''; $('project-name').value = ''; $('project-create').open = false; await refresh(); message('Project created. Add your first item.'); openComposer(); }); };
 $('project').onchange = () => { projectId = $('project').value; selectedId = ''; filter = 'all'; $('search').value = ''; persistSelection(); closeDetail(); refresh().catch(e => message(e.message, true)); };
 $('item-form').onsubmit = e => { e.preventDefault(); run(async () => { const item = await ReviewStore.create({projectId, text: $('statement').value, draftId}); selectedId = item.id; resetDraft(); $('item-form').hidden = true; filter = 'all'; $('search').value = ''; await refresh(); message(`${item.id} saved. Original text preserved.`); const row = Array.from(document.querySelectorAll('.item')).find(el => el.dataset.id === item.id); row?.focus(); }); };
+$('attach-save').onclick = () => run(async () => {
+  const itemId = $('attach-item').value; const result = await ReviewStore.attach(itemId, draftId, $('attach-note').value.trim());
+  selectedId = itemId; resetDraft(); $('item-form').hidden = true; await refresh();
+  message(`Capture saved as round ${result.item.rounds.length} on ${itemId}.`);
+  renderDetail(state.items.find(i => i.id === itemId)); $('detail').showModal();
+});
 $('cancel-draft').onclick = () => { if (!confirm('Discard this captured selection? This cannot be undone.')) return; run(async () => { await ReviewStore.discard(draftId); resetDraft(); $('item-form').hidden = true; await refresh(); $('new-item').focus(); message('Capture discarded.'); }); };
 $('excel-file').onchange=async e=>{
   const file=e.target.files?.[0]; if(!file)return;
@@ -191,6 +225,12 @@ $('restore-file').onchange = async e => {
   finally { e.target.value=''; }
 };
 $('export').onclick = () => run(async () => { const data = await ReviewStore.read(); const url = URL.createObjectURL(new Blob([JSON.stringify({format:'writeflow-review-record',exportedAt:new Date().toISOString(),...data},null,2)],{type:'application/json'})); const a = node('a'); a.href = url; a.download = 'writeflow-review-record.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url),1000); message('Record exported. Keep it somewhere safe.'); });
+$('export-decisions').onclick = () => run(async () => {
+  const data = await ReviewStore.read(); const text = ReviewExport.decisionsMarkdown(data, projectId);
+  const name = (data.projects.find(p => p.id === projectId)?.name || 'review').replace(/[^\w-]+/g, '-').toLowerCase();
+  const url = URL.createObjectURL(new Blob([text], {type: 'text/markdown'})); const a = node('a'); a.href = url; a.download = `${name}-decisions.md`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  try { await navigator.clipboard.writeText(text); message('Decisions exported and copied. Paste them into your shared page.'); } catch { message('Decisions exported as Markdown.'); }
+});
 function setTheme(theme) { if (!['light','dark','system'].includes(theme)) theme = 'system'; $('theme').value = theme; if (theme === 'system') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = theme; preference('theme',theme); }
 setTheme(preference('theme') || 'system'); $('theme').onchange = () => setTheme($('theme').value);
 window.addEventListener('keydown', e => { if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !$('detail').open && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) { e.preventDefault(); $('search').focus(); } });

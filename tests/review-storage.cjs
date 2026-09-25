@@ -5,7 +5,7 @@ function store(){const ctx=vm.createContext({indexedDB,crypto:require('node:cryp
 const a=store(),b=store(),p=await a.project('Supplier review');
 const items=await Promise.all(Array.from({length:30},(_,i)=>(i%2?a:b).create({projectId:p.id,text:'Issue '+i})));
 assert.equal(new Set(items.map(i=>i.id)).size,30);assert.equal((await a.read()).items.length,30);
-await a.status('R-001','pending');await b.status('R-001','closed');let s=await a.read();assert.equal(s.items[0].events.length,3);assert.equal(s.items[0].statement,'Issue 0');
+await a.status('R-001','pending');await assert.rejects(b.status('R-001','closed'));await b.status('R-001','closed','Resolved');let s=await a.read();assert.equal(s.items[0].events.length,3);assert.equal(s.items[0].statement,'Issue 0');
 const draftId=await a.draft({text:'Original evidence',url:'https://u:p@example.com/path?secret=x#part',title:'Source'});
 const i=await b.create({projectId:p.id,draftId,text:'User statement'});assert.equal(i.source.originalText,'Original evidence');assert.equal(i.source.url,'https://example.com/path');assert.equal(i.id,'R-031');
 await assert.rejects(a.create({projectId:p.id,draftId,text:'Duplicate'}));

@@ -33,7 +33,10 @@
   function cleanUrl(value) {
     try { const url = new URL(value); if (!['http:', 'https:'].includes(url.protocol)) return ''; url.search = ''; url.hash = ''; url.username = ''; url.password = ''; return url.href; } catch { return ''; }
   }
+  // Decision recorded by the latest close, or '' when the item is not closed.
+  function decision(item) { if (item.status !== 'closed') return ''; for (let i = item.events.length - 1; i >= 0; i -= 1) if (item.events[i].status === 'closed') return item.events[i].note || ''; return ''; }
   globalThis.ReviewStore = {
+    decision,
     read: () => access(),
     // Validation happens before the write transaction. One commit replaces the complete record.
     restore: raw => { const valid = ReviewBackup.validate(raw); return access(s => { for (const key of Object.keys(s)) delete s[key]; Object.assign(s, valid); return {projects: s.projects.length, items: s.items.length}; }); },
@@ -102,11 +105,25 @@
         events: [{ type: 'created', at: now, status: 'open' }], rounds: [] };
       s.items.push(item); if (draft) delete s.drafts[data.draftId]; return item;
     }),
-    status: (id, status) => access(s => {
+    // Closing records the decision in a few words; the note lives on the
+    // status event, so reopening and re-closing keeps every earlier decision.
+    status: (id, status, note) => access(s => {
       if (!statuses.includes(status)) throw new Error('Invalid status.');
+      const decision = status === 'closed' ? required(note, 500) : '';
       const item = s.items.find(i => i.id === id); if (!item) throw new Error('Item no longer exists.');
-      if (item.status !== status) { item.events.push({ type: 'status', from: item.status, status, at: new Date().toISOString() }); item.status = status; }
+      if (item.status !== status) { item.events.push({ type: 'status', from: item.status, status, at: new Date().toISOString(), ...(decision ? {note: decision} : {}) }); item.status = status; }
       return item;
+    }),
+    // A captured selection (typically a chat answer) becomes a new answered
+    // round on an existing item, keeping the page link for context.
+    attach: (itemId, draftId, instruction) => access(s => {
+      const draft = s.drafts[draftId]; if (!draft) throw new Error('This capture was already saved or discarded.');
+      const item = s.items.find(i => i.id === itemId); if (!item) throw new Error('Choose an item to attach this capture to.');
+      const now = new Date().toISOString();
+      let host = ''; try { host = new URL(draft.url).hostname; } catch {}
+      const round = {id: crypto.randomUUID(), mode: 'capture', instruction: required(instruction || 'Captured answer', 5000), at: now,
+        answer: {text: draft.text, at: now, provider: (host ? 'Captured from ' + host : 'Captured selection').slice(0, 80), demonstration: false, url: draft.url, title: draft.title}};
+      (item.rounds ||= []).push(round); delete s.drafts[draftId]; return {item, round};
     })
   };
 })();

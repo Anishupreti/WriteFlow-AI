@@ -1,7 +1,7 @@
 /* Validate untrusted JSON before an atomic restore. Never execute or merge input objects. */
 (() => {
   const statuses = ['open', 'pending', 'closed'];
-  const modes = ['explain', 'quantify', 'challenge', 'custom'];
+  const modes = ['explain', 'quantify', 'challenge', 'custom', 'capture'];
   const str = (v, max, label, optional = false) => {
     if (optional && (v === undefined || v === null)) return '';
     if (typeof v !== 'string' || v.length > max || (!optional && !v.trim())) throw new Error(`Invalid ${label}.`);
@@ -22,7 +22,8 @@
       const events = list(i.events, 10000, 'status events').map(e => {
         if (!['created','status'].includes(e?.type) || !statuses.includes(e.status)) throw new Error('Invalid status event.');
         if (e.type === 'status' && !statuses.includes(e.from)) throw new Error('Invalid previous status.');
-        return { type: e.type, at: timestamp(e.at, 'event date'), status: e.status, ...(e.type === 'status' ? {from: e.from} : {}) };
+        const note = str(e.note, 500, 'decision note', true);
+        return { type: e.type, at: timestamp(e.at, 'event date'), status: e.status, ...(e.type === 'status' ? {from: e.from} : {}), ...(note ? {note} : {}) };
       });
       if (!events.length || events[0].type !== 'created' || events[0].status !== 'open') throw new Error('Incomplete status history.');
       let current = 'open'; for (const e of events.slice(1)) { if (e.type !== 'status' || e.from !== current || e.status === current) throw new Error('Inconsistent status history.'); current=e.status; }
@@ -31,7 +32,7 @@
       const rounds = list(i.rounds ?? [], 3000, 'review rounds').map(r => {
         if (!r || !modes.includes(r.mode)) throw new Error('Invalid review action.');
         let answer = null;
-        if (r.answer !== null && r.answer !== undefined) answer = {text:str(r.answer.text,100000,'review answer'),at:timestamp(r.answer.at,'answer date'),provider:str(r.answer.provider,80,'provider',true),demonstration:r.answer.demonstration === true};
+        if (r.answer !== null && r.answer !== undefined) { answer = {text:str(r.answer.text,100000,'review answer'),at:timestamp(r.answer.at,'answer date'),provider:str(r.answer.provider,80,'provider',true),demonstration:r.answer.demonstration === true}; if (r.mode === 'capture') { answer.url = url(r.answer.url); answer.title = str(r.answer.title,300,'capture title',true); } }
         return {id:str(r.id,80,'round ID'),mode:r.mode,instruction:str(r.instruction,5000,'instruction'),at:timestamp(r.at,'instruction date'),answer};
       });
       if (new Set(rounds.map(r=>r.id)).size !== rounds.length) throw new Error('Duplicate round ID.');

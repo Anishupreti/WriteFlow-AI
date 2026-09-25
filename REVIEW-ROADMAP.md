@@ -8,6 +8,11 @@
 
 Acceptance gates: no answer overwrites; two delayed responses match their own instruction IDs; invalid backups leave existing data untouched; duplicate Excel IDs reject without partial imports; imported R-IDs remain stable; disputed source links identify affected items; source URL and selected text remain local unless the user requests AI analysis.
 
+## Release 0.21.0 — decisions and capture (implemented)
+- Earlier rounds and flagged sources are sent with each Ask AI request; larger review output budget.
+- Closing requires a decision note; decisions export as Markdown for shared pages.
+- Captured selections attach to existing items as answered rounds.
+
 ## Next: source-sheet migration and export
 - Import the workbook's second Sources sheet. Preview citation/proposition/item-number mappings and let the user choose the exact answer round for each relationship. Never infer a round from an item ID alone. Identify unresolved sources explicitly.
 - Export a human-readable .xlsx register and Sources sheet as an additional format, preserving the history ordering and stable IDs. Keep JSON as the complete backup format.
