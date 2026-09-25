@@ -56,35 +56,6 @@ Unknown metadata stays empty. Relationships are not inferred. URL metadata drops
 
 Association must be an enclosing post/comment/thread, an explicit quote in the active email reply, or a single visible source in the same dialog. Missing/ambiguous markup returns `null`. There is no nearest-post, first-post, longest-text, or whole-document email fallback. This intentionally reduces automatic coverage when association cannot be established. Social reply panels retain manual paste; email falls back to writing.
 
-## Verification matrix
-
-**F = synthetic browser fixture passed, not live-site certification.** All platforms below have generic writing through the shared editor layer. No authenticated service was verified. Layout variants outside the selector contract may require manual context. New Priority 2/3 definitions are provisional and need real DOM snapshots before production claims.
-
-| Platform | Writing | Context | Conversation | Smart Compose |
-|---|---|---|---|---|
-| LinkedIn | Shared editor F | F; nested reply | No | No |
-| X/Twitter | Shared editor F | F; associated tweet/dialog | No | No |
-| Facebook | Shared editor F | F; explicit body/comment hooks | No | No |
-| Reddit | Shared editor F | F; composed-tree reply | No | No |
-| YouTube | Shared editor F | F; associated video/comment | No | No |
-| Gmail | Shared editor F | F; thread/explicit quote | F; scoped recent messages | No |
-| Outlook | Shared editor F | F; thread/explicit quote | F; scoped recent messages | No |
-| Slack | Shared editor F | F; scoped messages | F | No |
-| WhatsApp | Shared editor F | F; active chat | F | No |
-| Instagram | Shared editor F | F; provisional caption hooks | No | No |
-| Threads | Shared editor F | F; provisional post hooks | No | No |
-| TikTok | Shared editor F | F; provisional video hooks | No | No |
-| Discord | Shared editor F | F; provisional chat container | F | No |
-| Bluesky | Shared editor F | F; provisional feed hooks | No | No |
-| Quora | Shared editor F | F; provisional answer hooks | No | No |
-| Medium | Shared editor F | F; enclosing article only | No | No |
-| Substack | Shared editor F | F; enclosing post only | No | No |
-| Tumblr | Shared editor F | F; provisional post hooks | No | No |
-| Pinterest | Shared editor F | F; provisional pin hooks | No | No |
-| Other permitted sites | Shared editor F | Manual only | No | No |
-
-Manifest coverage remains unchanged. Custom domains and domains absent from the original manifest require the existing per-site permission flow. Closed Shadow DOM and cross-origin frames are not supported. Editor discovery is lazy; `findEditors` is not a background full-page scan.
-
 ## Providers, privacy and licensing
 
 OpenAI, Anthropic, Gemini, Groq, OpenRouter and Mock remain available. Real API calls go directly from the isolated content script to the chosen provider; fallback uses the user's configured second provider/key. No WriteFlow backend, account, analytics server or remote prompt store were added. The only permission added since then is `contextMenus` (0.19.0), for Review Workspace capture. Keys and writing samples stay in `chrome.storage.local`; keys are not added to host-page DOM. Selected writing/context and optional samples go to the chosen AI provider when generating. Pro verification separately contacts Gumroad, as before.
