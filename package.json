@@ -1,6 +1,6 @@
 {
   "name": "writeflow-ai",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "private": true,
   "scripts": {
     "test": "node tests/run.cjs",
@@ -13,7 +13,8 @@
     "test:review:mock": "node tests/review-mock-acceptance.cjs",
     "test:review:import": "node tests/review-import-sources.cjs",
     "test:review:decisions": "node tests/review-decisions.cjs",
-    "test:review:decisions:browser": "node tests/review-decisions-browser.cjs"
+    "test:review:decisions:browser": "node tests/review-decisions-browser.cjs",
+    "test:keyboard": "node tests/keyboard-isolation.cjs"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.5",

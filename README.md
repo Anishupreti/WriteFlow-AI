@@ -1,6 +1,6 @@
 # WriteFlow AI
 
-Current source version: **0.21.0**. This repository includes the extension source and developer tests. The sections below document its architecture and verification history; live-site coverage remains under evaluation.
+Current source version: **0.21.1**. This repository includes the extension source and developer tests. The sections below document its architecture and verification history; live-site coverage remains under evaluation.
 
 ## What WriteFlow does
 
