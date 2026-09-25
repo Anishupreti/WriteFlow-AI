@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "WriteFlow AI",
-  "version": "0.18.1",
+  "version": "0.20.0",
   "description": "AI writing in browser text fields using your own AI provider key. Optional Pro licence validation uses Gumroad.",
   "icons": {
     "16": "icons/icon16.png",
@@ -81,7 +81,8 @@
   ],
   "permissions": [
     "storage",
-    "scripting"
+    "scripting",
+    "contextMenus"
   ],
   "host_permissions": [
     "https://api.gumroad.com/*",

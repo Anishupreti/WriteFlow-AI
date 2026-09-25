@@ -1,0 +1,16 @@
+WriteFlow AI 0.20.0 — mock acceptance test
+
+Manual test in Chrome:
+1. Load the extracted extension using chrome://extensions > Developer mode > Load unpacked.
+2. Open WriteFlow AI options and select the Mock provider. No API key is needed.
+3. From the extension popup, open Review Workspace. Create project Supplier Review.
+4. Add item: The supplier guarantees 99.9% uptime.
+5. Open the item. Select Quantify; enter Quantify; click Ask AI. Check for MOCK DEMONSTRATION.
+6. Select Challenge; enter Challenge; click Ask AI. Check both rounds still exist.
+7. Link a source to the Quantify answer: citation Example supplier agreement, section 4; proposition Claims a 99.9% uptime guarantee; URL https://example.com/agreement. Mark it disputed. Check affected-item warning.
+8. Export record as JSON. Add a temporary second item, then restore the JSON file. Confirm the temporary item disappears, while the original item, both rounds and disputed source remain.
+
+Mock responses are demonstrations only. This does not validate the supplier's claim or test a paid AI provider.
+
+Automated store/provider test (from source project after npm ci): npm run test:review:mock
+Browser UI test (requires Playwright Chromium): node tests/review-workflow-browser.cjs

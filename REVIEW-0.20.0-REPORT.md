@@ -1,0 +1,7 @@
+# WriteFlow AI 0.20.0 — review workflow report
+
+Implemented: Explain, Quantify, Challenge and Custom instructions; immutable instruction/answer rounds; pending retry; clearly labelled local Mock answers; provider-backed analysis using existing user keys; linked evidence with citation, exact proposition, reviewer status and affected-item links; JSON backup restore with validation; and local first-sheet Excel register import with preview, A–D identity/status/section/statement and E/F history pairs.
+
+Verification: JavaScript/package build; existing review storage tests; new concurrent round/restore tests; source and Excel parser tests; browser-page Mock workflow (answer, dispute, export, restore and Excel import); browser UI responsiveness and accessibility interaction checks. All passed. Existing writing regression suite had five failures reproducible in the unmodified 0.18.1 baseline and remains outside this change. Installed-extension/context-menu and real paid provider tests remain outstanding.
+
+Known limits: the Excel Sources worksheet is not imported; source-to-answer relationships must be selected explicitly in the workspace. Import of an existing R-ID collision rejects the whole import. JSON restore replaces local review data only after validation and user confirmation; export a current backup first. Source statuses are human judgements. External source contents are not independently fetched or verified. JSON export remains the complete backup format; Excel export is planned. See REVIEW-ROADMAP.md.

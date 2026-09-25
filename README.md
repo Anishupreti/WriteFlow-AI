@@ -1,6 +1,6 @@
 # WriteFlow AI
 
-Current source version: **0.18.1**. This repository includes the extension source and developer tests. The sections below document its architecture and verification history; live-site coverage remains under evaluation.
+Current source version: **0.20.0**. This repository includes the extension source and developer tests. The sections below document its architecture and verification history; live-site coverage remains under evaluation.
 
 ## Install for evaluation
 
@@ -104,3 +104,18 @@ The local tier flag (`tier` in chrome.storage.local, set after Gumroad license v
 For an interactive run without Playwright process launch: run `node tests/create-browser-harness.cjs`, then `python tests/serve.py`, and open `http://127.0.0.1:8765/tests/browser.html`. Results are saved in `tests/browser-results.json`. The preview controls apply the exact light/dark palette rules for inspection without changing browser/OS settings.
 
 See `MILESTONE-1-REPORT.md` for measured results, known defects and outstanding acceptance work. Passing fixtures does not establish compatibility with every React editor, authenticated platform, real provider model, or Chrome extension integration.
+
+## Review Workspace — milestone 1
+Open **Review Workspace** in the popup, create a project, and add an item. On an HTTP(S) webpage select text and use **Save selection to Review** in the context menu. Review the capture and choose its project before saving. Capture works independently of automatic writing-site permissions. Captured URLs omit query strings/fragments/credentials; full original selected text is retained.
+
+Items receive globally increasing R-IDs. Their statements and original captures remain fixed; changing Open/Pending/Closed appends a status event. IndexedDB transactions prevent concurrent tabs from losing saves or duplicating IDs. The new `contextMenus` permission enables explicit capture. Nothing is sent to an AI provider by this workspace. The workspace is available without a Pro gate in this evaluation milestone.
+
+JSON export is a readable full record, not yet a restore workflow. AI review rounds, source dependencies, Excel import/export, deletion controls and restore are later milestones. Keep exports before uninstalling the extension.
+
+## Review Workspace UI update — 0.19.1
+A redesigned project sidebar, compact register rows, clickable status summaries, instant search by ID/text/source, guided empty states and an on-demand item form. Details open in a keyboard-accessible drawer, which fills narrow screens; Escape closes it and returns focus. Appearance supports System/Light/Dark, with the chosen project and item remembered locally. Press / outside form fields to focus search. Closing the item form retains unsaved text in the current page, with a leave-page warning; it is not an automatic draft backup.
+
+Run `npm run test:review:ux` for the browser-page UX checks. See REVIEW-UI-REPORT.md for measured tests and remaining limitations.
+
+## Review workflow 0.20.0
+Review item details now include Explain, Quantify, Challenge and Custom rounds using the selected provider. Instructions are stored before sending and answers cannot overwrite earlier answers. Mock output is explicitly marked as demonstration. The entire local review record can be exported and restored from validated JSON. Sources can be linked to answered rounds, marked supported/disputed/withdrawn by the reviewer, and show affected items. An .xlsx import preview reads the first register sheet, retaining R-IDs and E/F review pairs. The workbook's separate Sources sheet is not imported in this release; see REVIEW-ROADMAP.md.

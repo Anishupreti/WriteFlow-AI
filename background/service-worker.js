@@ -1,3 +1,4 @@
+importScripts("../review/store.js");
 // background/service-worker.js
 chrome.commands.onCommand.addListener(async (command) => {
   if (command !== "open-writeflow") return;
@@ -34,4 +35,17 @@ chrome.runtime.onInstalled.addListener(async () => {
   const js = chrome.runtime.getManifest().content_scripts[0].js;
   const updates = scripts.filter(script => script.id.startsWith('wf-dynamic-')).map(script => ({ id: script.id, js }));
   if (updates.length) await chrome.scripting.updateContentScripts(updates);
+});
+
+// Explicit selection capture: no page scanning and no AI request.
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.removeAll(() => chrome.contextMenus.create({
+    id: 'wf-review-capture', title: 'Save selection to Review', contexts: ['selection'], documentUrlPatterns: ['http://*/*', 'https://*/*']
+  }));
+});
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId !== 'wf-review-capture' || !info.selectionText) return;
+  ReviewStore.draft({text: info.selectionText, url: info.frameUrl || info.pageUrl, title: tab?.title || ''})
+    .then(id => chrome.tabs.create({url: chrome.runtime.getURL('review/review.html') + '#draft=' + encodeURIComponent(id)}))
+    .catch(error => { console.error('Review capture failed:', error); chrome.tabs.create({url: chrome.runtime.getURL('review/review.html') + '#capture-error'}); });
 });

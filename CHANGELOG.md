@@ -1,3 +1,30 @@
+# 0.20.0 — Review rounds, sources, backup restore and register import
+
+- Immutable instruction–answer pairs and retryable pending requests. Explain, Quantify, Challenge and Custom call existing BYOK providers from the workspace. Mock replies remain visibly labelled demonstrations.
+- Sources tied to answer-round IDs; proposition, URL, citation, status and review history. Disputed evidence highlights affected items.
+- Validated, transactional JSON restore with legacy backup support.
+- First-sheet .xlsx register import with preview, stable IDs and historical pairs. Import is atomic and does not rewrite existing items.
+- Local ZIP parser vendored with its MIT licence. No new browser permission or backend.
+
+# 0.19.1 — Review Workspace interface refinement
+
+- New project sidebar, capture inbox, compact register and status filter cards.
+- Search by item ID, statement or source; combined search/status filters and helpful empty states.
+- Detail drawer with focus containment, Escape dismissal, focus return and full-width narrow-screen layout.
+- Collapsible item entry retains unsaved text while hidden.
+- Remembered project/item selection and System/Light/Dark preference.
+- Accessible control labels, live feedback, keyboard search shortcut and reduced-motion support.
+- No new permission, provider or storage schema changes.
+
+# 0.19.0 — Review Workspace, milestone 1
+
+- Local projects, stable review IDs and Open/Pending/Closed sections.
+- Explicit selection capture with source provenance and an editable preview before saving.
+- Immutable saved statements/original captures and appended status history.
+- Transactional local database and JSON record export.
+- Popup entry point; new contextMenus permission; no review AI calls.
+- This is an evaluation milestone, not completion of the full Review Workspace roadmap.
+
 # Changelog
 
 ## 0.18.1 — GitHub release correction

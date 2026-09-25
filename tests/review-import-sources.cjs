@@ -1,0 +1,27 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const {indexedDB}=require('fake-indexeddb'),{JSDOM}=require('jsdom'),fflate=require('fflate');
+const win=new JSDOM('<!doctype html>').window;
+const ctx=vm.createContext({indexedDB,crypto:require('node:crypto').webcrypto,URL,DOMParser:win.DOMParser,TextDecoder,fflate});
+for(const file of ['review/excel.js','review/backup.js','review/store.js'])vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
+const store=ctx.ReviewStore;
+(async()=>{
+ const p=await store.project('Import');
+ const workbook=`<?xml version="1.0"?><workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Register" r:id="rId1"/></sheets></workbook>`;
+ const relations=`<?xml version="1.0"?><Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>`;
+ const worksheet=`<?xml version="1.0"?><worksheet><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>Item ID</t></is></c><c r="B1" t="inlineStr"><is><t>Status</t></is></c><c r="C1" t="inlineStr"><is><t>Section</t></is></c><c r="D1" t="inlineStr"><is><t>Risk Statement</t></is></c></row><row r="2"><c r="A2" t="inlineStr"><is><t>R-014</t></is></c><c r="B2" t="inlineStr"><is><t>Pending</t></is></c><c r="C2" t="inlineStr"><is><t>Legal</t></is></c><c r="D2" t="inlineStr"><is><t>Check regulation</t></is></c><c r="E2" t="inlineStr"><is><t>Challenge</t></is></c><c r="F2" t="inlineStr"><is><t>Latest response</t></is></c><c r="G2" t="inlineStr"><is><t>Explain</t></is></c><c r="H2" t="inlineStr"><is><t>Older response</t></is></c></row></sheetData></worksheet>`;
+ const encoded=x=>new TextEncoder().encode(x);
+ const zip=fflate.zipSync({'xl/workbook.xml':encoded(workbook),'xl/_rels/workbook.xml.rels':encoded(relations),'xl/worksheets/sheet1.xml':encoded(worksheet)});
+ const rows=ctx.ReviewExcel.parse(zip.buffer.slice(zip.byteOffset,zip.byteOffset+zip.byteLength));
+ assert.equal(rows.length,1);assert.equal(rows[0].rounds[0].instruction,'Explain');assert.equal(rows[0].rounds[1].instruction,'Challenge');
+ const imported=await store.importRows(p.id,rows);assert.equal(imported.ids[0],'R-014');
+ let data=await store.read(),item=data.items[0];assert.equal(item.status,'pending');assert.equal(item.section,'Legal');assert.equal(item.rounds[0].answer.text,'Older response');
+ await assert.rejects(store.importRows(p.id,rows),/already exists/);assert.equal((await store.read()).items.length,1);
+ const source=await store.source(item.id,item.rounds[0].id,{citation:'Regulation §4',proposition:'The rate applies',url:'https://example.com/regulation'});
+ await store.linkSource(source.id,item.id,item.rounds[1].id);await store.sourceStatus(source.id,'disputed');
+ data=await store.read();assert.equal(data.sources[0].links.length,2);assert.equal(data.sources[0].events.length,2);
+ const invalid=JSON.parse(JSON.stringify(data));invalid.sources[0].links[0].roundId='wrong';assert.throws(()=>ctx.ReviewBackup.validate(invalid),/missing answer/);
+ await store.restore(data);assert.equal((await store.read()).sources[0].status,'disputed');
+ assert.throws(()=>ctx.ReviewExcel.parseRows([['Item ID','Status','Section','Risk Statement'],['R-001','bad','A','Bad']]),/unknown status/);
+ assert.throws(()=>ctx.ReviewExcel.parseRows([['Item ID','Status','Section','Risk Statement'],['R-001','Open','A','One'],['R-001','Open','A','Two']]),/Duplicate/);
+ console.log('PASS: local XLSX first sheet parse; original R-ID and reverse chronology; atomic collision rejection; source links to exact answers; disputed history; restore referential validation.');
+})().catch(error=>{console.error(error);process.exitCode=1});

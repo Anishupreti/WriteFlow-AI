@@ -3,7 +3,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json')));
-for (const dir of ['content','services','popup','options','background']) {
+for (const dir of ['content','services','popup','options','background','review']) {
   for (const file of fs.readdirSync(path.join(root,dir)).filter(x => x.endsWith('.js'))) {
     new vm.Script(fs.readFileSync(path.join(root,dir,file),'utf8'), { filename: `${dir}/${file}` });
   }
